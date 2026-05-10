@@ -1,0 +1,9 @@
+{
+  "name": "voiceprint",
+  "version": "1.0.0",
+  "description": "Make AI writing sound like you",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "stripe": "^14.0.0"
+  }
+}
