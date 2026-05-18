@@ -451,7 +451,7 @@ var authMode = 'signin';
 
 // ─── BOOT ──────────────────────────────────────────────────────
 window.addEventListener('load', async function() {
-  var { data: { session } } = await sb.auth.getSession();
+  var { data: { session } } = await var { data: { session } } = await Promise.race([sb.auth.getSession(), new Promise(r => setTimeout(() => r({ data: { session: null } }), 2000))]);();
   if (session && session.user) {
     await bootApp(session.user);
   } else {
