@@ -1,3 +1,4 @@
 [build]
-  publish = "voiceprint"
-  functions = "voiceprint/netlify/functions"
+  base = "voiceprint"
+  publish = "."
+  functions = "netlify/functions"
