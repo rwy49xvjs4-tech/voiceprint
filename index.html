@@ -658,10 +658,17 @@ async function bootApp(user) {
   updateUsageBar();
   await loadVoiceProfiles();
 
-  if (!userRow.onboarding_done) {
+  // Check localStorage first for instant load, then verify with DB
+  var localOnboarding = false;
+  try { localOnboarding = localStorage.getItem('vp_onboarding_done_' + user.id) === '1'; } catch(e) {}
+  if (!userRow.onboarding_done && !localOnboarding) {
     showScreen('onboarding');
     showObStep(2);
   } else {
+    // Make sure DB is in sync
+    if (localOnboarding && !userRow.onboarding_done) {
+      sb.from('users').update({ onboarding_done: true }).eq('id', user.id);
+    }
     showScreen('app');
   }
 }
@@ -811,7 +818,8 @@ async function obSkipToApp() {
 
 async function markOnboardingDone() {
   if (currentUser) {
-    await sb.from('profiles').update({ onboarding_done: true }).eq('user_id', currentUser.id);
+    await sb.from('users').update({ onboarding_done: true }).eq('id', currentUser.id);
+    try { localStorage.setItem('vp_onboarding_done_' + currentUser.id, '1'); } catch(e) {}
   }
 }
 
@@ -1055,7 +1063,7 @@ async function rewriteText() {
     rewriteCount++;
     updateUsageBar();
     if (currentUser) {
-      await sb.from('profiles').update({ rewrite_count: rewriteCount }).eq('user_id', currentUser.id);
+      await sb.from('users').update({ words_used_this_cycle: rewriteCount }).eq('id', currentUser.id);
       await sb.from('rewrites').insert({ user_id: currentUser.id, input_text: input.substring(0,500), output_text: result.substring(0,500) });
     }
   } catch(e) {
