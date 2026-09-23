@@ -4,12 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Voiceprint — Make AI sound like you</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-
 <style>
 :root {
   --ink: #0e0d0b;
@@ -30,81 +27,122 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; font-size: 15px; line-height: 1.6; }
 
-/* LOADING */
+/* ── LOADING ── */
 #loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
 .spinner { width: 32px; height: 32px; border: 3px solid var(--cream); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* AUTH */
-#auth-screen { min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 40px 20px; }
-.auth-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 40px; width: 100%; max-width: 400px; }
-.auth-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px; }
-.logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--purple); }
-.auth-tagline { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 32px; }
-.auth-tabs { display: flex; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+/* ── AUTH ── */
+#auth-screen { min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 40px 20px; background: var(--paper); }
+.auth-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 40px; width: 100%; max-width: 420px; text-align: center; }
+.auth-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px; }
+.logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
+.auth-tagline { font-size: 15px; color: var(--muted); margin-bottom: 8px; }
+.auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; line-height: 1.5; }
+.auth-google { width: 100%; padding: 14px; border-radius: 12px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; border: 2px solid var(--border); background: white; color: var(--ink); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; }
+.auth-google:hover { border-color: var(--purple); background: var(--purple-light); }
+.auth-divider { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.auth-tabs { display: flex; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
 .auth-tab { flex: 1; padding: 10px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; }
 .auth-tab.active { background: var(--purple); color: white; }
-.auth-form { display: flex; flex-direction: column; gap: 12px; }
-.auth-input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); color: var(--ink); outline: none; transition: border-color 0.2s; }
+.auth-form { display: flex; flex-direction: column; gap: 10px; }
+.auth-input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); color: var(--ink); outline: none; transition: border-color 0.2s; text-align: left; }
 .auth-input:focus { border-color: var(--purple); }
 .auth-input::placeholder { color: var(--muted); }
-.auth-btn { width: 100%; padding: 13px; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; border: none; background: var(--purple); color: white; transition: background 0.2s; letter-spacing: 0.01em; }
+.auth-btn { width: 100%; padding: 13px; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; border: none; background: var(--purple); color: white; transition: background 0.2s; }
 .auth-btn:hover { background: var(--purple-dark); }
 .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.auth-divider { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); }
-.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.auth-google { width: 100%; padding: 12px; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--ink); transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.auth-google:hover { background: var(--cream); }
-.auth-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 16px; line-height: 1.6; }
-.auth-error { font-size: 13px; color: var(--red); background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2); border-radius: 8px; padding: 10px 14px; display: none; }
+.auth-error { font-size: 13px; color: var(--red); background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2); border-radius: 8px; padding: 10px 14px; display: none; margin-bottom: 10px; }
+.auth-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
 
-/* NAV */
-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 40px; border-bottom: 1px solid var(--border); background: rgba(245,242,236,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+/* ── ONBOARDING ── */
+#onboarding-screen { min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 40px 20px; background: var(--paper); }
+.onboard-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 40px; width: 100%; max-width: 560px; }
+.onboard-step-indicator { display: flex; align-items: center; gap: 8px; margin-bottom: 28px; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cream); border: 1px solid var(--border); transition: all 0.3s; }
+.step-dot.active { background: var(--purple); border-color: var(--purple); width: 24px; border-radius: 4px; }
+.step-dot.done { background: var(--teal); border-color: var(--teal); }
+.onboard-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; margin-bottom: 8px; }
+.onboard-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+
+/* Sample upload area */
+.sample-upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; transition: border-color 0.2s; }
+.sample-upload-area:focus-within { border-color: var(--purple); }
+.sample-type-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.type-pill { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--paper); font-size: 12px; font-family: 'Syne', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.type-pill.selected { background: var(--purple); color: white; border-color: var(--purple); }
+.sample-textarea { width: 100%; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); resize: none; outline: none; line-height: 1.6; min-height: 80px; }
+.sample-textarea::placeholder { color: var(--muted); }
+.sample-added-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.sample-chip { display: flex; align-items: center; justify-content: space-between; background: var(--teal-light); border: 1px solid rgba(0,168,120,0.2); border-radius: 8px; padding: 8px 12px; font-size: 12px; }
+.sample-chip-label { color: var(--teal); font-weight: 600; font-family: 'Syne', sans-serif; font-size: 10px; text-transform: uppercase; margin-right: 8px; }
+.sample-chip-del { background: none; border: none; cursor: pointer; color: var(--teal); opacity: 0.6; font-size: 16px; }
+
+/* ── DNA INFOGRAPHIC ── */
+.dna-card { background: var(--ink); border-radius: 20px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
+.dna-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: var(--purple); opacity: 0.15; }
+.dna-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; color: var(--paper); margin-bottom: 4px; position: relative; z-index: 1; }
+.dna-subtitle { font-size: 12px; color: rgba(247,244,238,0.5); margin-bottom: 20px; position: relative; z-index: 1; }
+.dna-traits { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; position: relative; z-index: 1; margin-bottom: 16px; }
+.dna-trait { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 12px; }
+.dna-trait-label { font-size: 10px; color: rgba(247,244,238,0.5); font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.dna-trait-value { font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--paper); margin-bottom: 6px; }
+.dna-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.dna-bar-fill { height: 100%; border-radius: 2px; background: var(--purple); }
+.dna-quirks { position: relative; z-index: 1; }
+.dna-quirks-title { font-size: 11px; color: rgba(247,244,238,0.5); font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.dna-quirk { display: inline-block; background: rgba(255,255,255,0.08); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--paper); margin: 3px; font-family: 'Syne', sans-serif; font-weight: 600; }
+.dna-quirk.highlight { background: var(--purple); }
+
+/* ── NAV ── */
+nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 40px; border-bottom: 1px solid var(--border); background: rgba(245,242,236,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
 .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 7px; }
 .nav-right { display: flex; align-items: center; gap: 10px; }
-.nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--purple-light); color: var(--purple-dark); font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; display: flex; align-items: center; justify-content: center; }
+.nav-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--purple-light); color: var(--purple-dark); font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; display: flex; align-items: center; justify-content: center; }
 .plan-badge { font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
 .badge-free { background: var(--cream); color: var(--muted); }
 .badge-pro { background: var(--purple-light); color: var(--purple-dark); }
-.badge-student { background: var(--teal-light); color: var(--teal); }
 
-/* BUTTONS */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid transparent; transition: all 0.18s; }
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; border: 1px solid transparent; transition: all 0.18s; }
 .btn-primary { background: var(--purple); color: white; border-color: var(--purple); }
 .btn-primary:hover { background: var(--purple-dark); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-secondary { background: transparent; color: var(--ink); border-color: var(--border); }
 .btn-secondary:hover { background: var(--cream); }
+.btn-full { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+.btn-teal { background: var(--teal); color: white; border-color: var(--teal); }
+.btn-teal:hover { background: #008f67; }
 
-/* MAIN */
+/* ── MAIN APP ── */
 #main-app { display: none; }
-.app-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 40px 80px; }
+.app-wrap { max-width: 1100px; margin: 0 auto; padding: 28px 40px 80px; }
 
-/* USAGE BAR */
-.usage-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-.usage-label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+/* usage bar */
+.usage-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.usage-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .usage-track { flex: 1; height: 4px; background: var(--cream); border-radius: 2px; overflow: hidden; }
 .usage-fill { height: 100%; background: var(--purple); border-radius: 2px; transition: width 0.4s; }
 .usage-fill.warn { background: var(--amber); }
 .usage-fill.full { background: var(--red); }
-.usage-count { font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; white-space: nowrap; }
+.usage-count { font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; white-space: nowrap; }
 .upgrade-link { font-size: 12px; color: var(--purple); font-weight: 700; cursor: pointer; white-space: nowrap; font-family: 'Syne', sans-serif; }
-.upgrade-link:hover { text-decoration: underline; }
 
-/* PROFILE BAR */
-.profile-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+/* profile bar */
+.profile-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
 .profile-bar-label { font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); white-space: nowrap; }
-.profile-chip { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.profile-chip { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); font-size: 13px; cursor: pointer; transition: all 0.15s; }
 .profile-chip.active { background: var(--purple); color: white; border-color: var(--purple); }
 .profile-chip:hover:not(.active) { background: var(--cream); }
-.profile-chip-del { opacity: 0.5; cursor: pointer; line-height: 1; }
+.profile-chip-del { opacity: 0.5; cursor: pointer; }
 .profile-chip-del:hover { opacity: 1; }
-.new-profile-btn { padding: 6px 14px; border-radius: 20px; border: 1px dashed var(--border); background: transparent; font-size: 13px; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.new-profile-btn { padding: 5px 12px; border-radius: 20px; border: 1px dashed var(--border); background: transparent; font-size: 12px; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
 .new-profile-btn:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-light); }
 
-/* STEPS */
-.steps-bar { display: flex; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 24px; }
-.step-tab { flex: 1; display: flex; align-items: center; gap: 8px; padding: 13px 18px; cursor: pointer; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); transition: all 0.2s; border-right: 1px solid var(--border); }
+/* steps */
+.steps-bar { display: flex; background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+.step-tab { flex: 1; display: flex; align-items: center; gap: 8px; padding: 12px 16px; cursor: pointer; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); transition: all 0.2s; border-right: 1px solid var(--border); }
 .step-tab:last-child { border-right: none; }
 .step-tab.active { background: var(--purple); color: white; }
 .step-tab.done { color: var(--teal); background: var(--teal-light); }
@@ -112,13 +150,13 @@ nav { display: flex; align-items: center; justify-content: space-between; paddin
 .step-tab.active .step-num { background: rgba(255,255,255,0.25); }
 .step-tab.done .step-num { background: var(--teal); color: white; }
 
-/* PANELS */
+/* panels */
 .panel { display: none; animation: fadeIn 0.3s ease; }
 .panel.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-/* SAMPLE CARDS */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+/* cards */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
 .card-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 12px; }
 
@@ -129,19 +167,18 @@ textarea::placeholder { color: var(--muted); }
 select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--paper); color: var(--ink); outline: none; margin-bottom: 10px; }
 
 .sample-item { display: flex; align-items: center; justify-content: space-between; background: var(--paper); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; margin-bottom: 6px; }
-.sample-tag { font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; background: var(--purple-light); color: var(--purple-dark); }
-.remove-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 0 2px; }
+.remove-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; }
 .remove-btn:hover { color: var(--red); }
 
-/* TRAIT BARS */
+/* traits */
 .trait-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
 .trait-name { font-size: 12px; color: var(--muted); min-width: 130px; }
 .trait-track { flex: 1; height: 4px; background: var(--cream); border-radius: 2px; }
 .trait-fill { height: 100%; border-radius: 2px; background: var(--purple); transition: width 1s cubic-bezier(0.16,1,0.3,1); }
 .trait-word { font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; min-width: 80px; text-align: right; }
 
-/* REWRITE */
-.controls-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+/* rewrite */
+.controls-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
 .ctrl-label { font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
 input[type=range] { -webkit-appearance: none; flex: 1; min-width: 80px; height: 4px; background: var(--cream); border-radius: 2px; outline: none; }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--purple); cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(74,63,255,0.3); }
@@ -162,47 +199,51 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
 
-/* UPGRADE MODAL */
-.modal-wrap { display: none; min-height: 480px; background: rgba(14,13,11,0.5); align-items: center; justify-content: center; border-radius: 20px; margin-bottom: 20px; }
+/* upgrade modal */
+.modal-wrap { display: none; position: fixed; inset: 0; background: rgba(14,13,11,0.6); align-items: center; justify-content: center; z-index: 200; padding: 20px; }
 .modal-wrap.show { display: flex; }
-.modal { background: var(--card); border-radius: 20px; padding: 36px; max-width: 460px; width: 100%; text-align: center; }
+.modal { background: var(--card); border-radius: 24px; padding: 36px; max-width: 480px; width: 100%; text-align: center; }
 .modal h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
 .modal p { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.65; }
-.modal-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-.modal-plan { border: 1px solid var(--border); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.15s; text-align: left; }
-.modal-plan:hover { border-color: var(--purple); background: var(--purple-light); }
+.modal-plans { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.modal-plan { border: 1px solid var(--border); border-radius: 14px; padding: 14px 10px; cursor: pointer; transition: all 0.15s; text-align: center; }
+.modal-plan:hover { border-color: var(--purple); background: var(--purple-light); transform: translateY(-2px); }
 .modal-plan.featured { border: 2px solid var(--purple); background: var(--purple-light); }
-.modal-plan-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.modal-plan-price { font-size: 24px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--purple); }
-.modal-plan-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
-.modal-plan.featured .modal-plan-sub { color: var(--purple-dark); }
+.modal-plan-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--purple); margin-bottom: 4px; font-family: 'Syne', sans-serif; }
+.modal-plan-name { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.modal-plan-price { font-size: 20px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--purple); }
+.modal-plan-sub { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
 
-/* HISTORY */
+/* history */
 .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
 .history-time { font-size: 11px; color: var(--muted); font-family: 'Syne', sans-serif; margin-bottom: 10px; }
 .history-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .history-col-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 4px; font-family: 'Syne', sans-serif; }
 .history-text { font-size: 13px; line-height: 1.6; }
 
-/* TOAST */
+/* toast */
 .toast { position: fixed; bottom: 24px; right: 24px; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-family: 'Syne', sans-serif; font-weight: 600; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 9999; background: var(--ink); color: white; }
 .toast.show { opacity: 1; transform: none; }
 .toast.success { background: var(--teal); }
 .toast.error { background: var(--red); }
 
-/* VERIFY EMAIL SCREEN */
+/* auto-save indicator */
+.autosave { font-size: 11px; color: var(--teal); font-family: 'Syne', sans-serif; display: none; align-items: center; gap: 4px; }
+.autosave.show { display: flex; }
+.autosave-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* verify */
 #verify-screen { display: none; min-height: 100vh; align-items: center; justify-content: center; }
 .verify-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 40px; max-width: 400px; width: 100%; text-align: center; }
-.verify-icon { font-size: 48px; margin-bottom: 16px; }
-.verify-card h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-.verify-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
 
 @media (max-width: 700px) {
-  .two-col, .rewrite-cols, .history-cols, .modal-plans { grid-template-columns: 1fr; }
-  nav { padding: 14px 20px; }
-  .app-wrap { padding: 20px 16px 60px; }
+  .two-col, .rewrite-cols, .history-cols { grid-template-columns: 1fr; }
+  .modal-plans { grid-template-columns: 1fr; }
+  nav { padding: 12px 20px; }
+  .app-wrap { padding: 16px 16px 60px; }
   .steps-bar { overflow-x: auto; }
-  .controls-bar { gap: 10px; }
+  .dna-traits { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -217,40 +258,128 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 <!-- VERIFY EMAIL -->
 <div id="verify-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center">
   <div class="verify-card">
-    <div class="verify-icon">📬</div>
-    <h2>Check your email</h2>
-    <p>We sent a confirmation link to <strong id="verify-email"></strong>. Click it to activate your account, then come back here.</p>
-    <button class="btn btn-secondary" style="margin-top:20px;width:100%;justify-content:center" onclick="showAuthScreen()">← Back to sign in</button>
+    <div style="font-size:48px;margin-bottom:16px">📬</div>
+    <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px">Check your email</h2>
+    <p style="font-size:14px;color:var(--muted)">We sent a link to <strong id="verify-email"></strong>. Click it then come back.</p>
+    <button class="btn btn-secondary" style="margin-top:20px;width:100%;justify-content:center" onclick="showScreen('auth')">← Back to sign in</button>
   </div>
 </div>
 
-<!-- AUTH -->
+<!-- AUTH — Step 1: One-Tap Login -->
 <div id="auth-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:40px 20px">
   <div class="auth-card">
     <div class="auth-logo"><span class="logo-dot"></span>voiceprint</div>
-    <div class="auth-tagline">Make AI writing sound like you</div>
+    <div class="auth-tagline" style="font-weight:600;color:var(--ink);font-size:17px;margin-bottom:4px">Make AI writing sound like <em>you</em></div>
+    <div class="auth-sub">Create your free Linguistic DNA Profile in 2 minutes. No credit card needed.</div>
+
+    <button class="auth-google" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.3z"/></svg>
+      Continue with Google — it's free
+    </button>
+
+    <div class="auth-divider">or use email</div>
 
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign in</button>
       <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create account</button>
     </div>
-
     <div id="auth-error" class="auth-error"></div>
-
     <div class="auth-form">
       <input class="auth-input" type="email" id="auth-email" placeholder="Email address" autocomplete="email">
       <input class="auth-input" type="password" id="auth-password" placeholder="Password (min 6 characters)" autocomplete="current-password">
       <button class="auth-btn" id="auth-submit" onclick="handleAuth()">Sign in</button>
     </div>
+    <div class="auth-note" style="font-size:13px;color:var(--muted);margin-top:16px">🎓 <strong style="color:var(--ink)">Student Discount:</strong> Unlock <strong style="color:var(--purple)">200 pages/month</strong> for just <strong style="color:var(--ink)">$4.99/mo.</strong></div>
+  </div>
+</div>
 
-    <div class="auth-divider" style="margin:16px 0">or</div>
+<!-- ONBOARDING — Steps 2, 3, 4 -->
+<div id="onboarding-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:40px 20px">
+  <div class="onboard-card">
 
-    <button class="auth-google" onclick="signInWithGoogle()">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.3z"/></svg>
-      Continue with Google
-    </button>
+    <!-- Step indicator -->
+    <div class="onboard-step-indicator">
+      <div class="step-dot active" id="ob-dot-1"></div>
+      <div class="step-dot" id="ob-dot-2"></div>
+      <div class="step-dot" id="ob-dot-3"></div>
+    </div>
 
-    <div class="auth-note">🎓 Signing up with a .edu email? You'll automatically qualify for the student discount at checkout.</div>
+    <!-- STEP 2: Upload samples -->
+    <div id="ob-step-2" class="ob-step">
+      <div class="onboard-title">Build your Linguistic DNA Profile</div>
+      <div class="onboard-sub">Paste 2–3 things you actually wrote — texts, emails, essays, anything. The messier and more natural the better. This is how we learn <em>you</em>.</div>
+
+      <div class="sample-upload-area" id="ob-upload-area">
+        <div class="sample-type-row" id="ob-type-row">
+          <div class="type-pill selected" onclick="selectType(this,'text')">Text</div>
+          <div class="type-pill" onclick="selectType(this,'email')">Email</div>
+          <div class="type-pill" onclick="selectType(this,'essay')">Essay</div>
+          <div class="type-pill" onclick="selectType(this,'tweet')">Post/Tweet</div>
+          <div class="type-pill" onclick="selectType(this,'other')">Other</div>
+        </div>
+        <textarea class="sample-textarea" id="ob-sample-input" placeholder="Paste something you wrote here — the more casual and natural the better..."></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px">
+          <button class="btn btn-secondary" style="font-size:12px;padding:6px 14px" onclick="obAddSample()">+ Add this sample</button>
+        </div>
+      </div>
+
+      <div class="sample-added-list" id="ob-sample-list"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+        <span style="font-size:12px;color:var(--muted)" id="ob-sample-hint">Add at least 2 samples to continue</span>
+        <button class="btn btn-primary" id="ob-analyze-btn" onclick="obAnalyze()" disabled>Analyze my voice →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: DNA Infographic -->
+    <div id="ob-step-3" class="ob-step" style="display:none">
+      <div class="onboard-title">🧬 Your Linguistic DNA Profile</div>
+      <div class="onboard-sub">Here's what makes your writing uniquely <em>you</em>. This fingerprint is saved to your account forever.</div>
+
+      <div class="dna-card" id="dna-infographic">
+        <div class="dna-title" id="dna-name">Your Writing DNA</div>
+        <div class="dna-subtitle" id="dna-built">Built from 0 samples</div>
+        <div class="dna-traits" id="dna-traits"></div>
+        <div class="dna-quirks">
+          <div class="dna-quirks-title">Your signature patterns</div>
+          <div id="dna-quirk-tags"></div>
+        </div>
+      </div>
+
+      <button class="btn btn-teal btn-full" onclick="obGoToStep4()">Lock in my profile → Subscribe for $4.99/mo</button>
+      <div style="text-align:center;margin-top:12px">
+        <span style="font-size:12px;color:var(--muted);cursor:pointer" onclick="obSkipToApp()">Skip for now — use 3 free rewrites first</span>
+      </div>
+    </div>
+
+    <!-- STEP 4: Conversion -->
+    <div id="ob-step-4" class="ob-step" style="display:none">
+      <div class="onboard-title">🔒 Your profile is ready</div>
+      <div class="onboard-sub">Subscribe to unlock unlimited rewrites using your Linguistic DNA Profile. Cancel anytime.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+        <div class="modal-plan" onclick="checkout('daily')">
+          <div class="modal-plan-name">Daily Pass</div>
+          <div class="modal-plan-price" style="font-size:22px">$3<span style="font-size:13px;font-weight:400;color:var(--muted)">.99</span></div>
+          <div class="modal-plan-sub">Paper due tonight</div>
+        </div>
+        <div class="modal-plan featured" onclick="checkout('student')">
+          <div class="modal-plan-label">Most popular</div>
+          <div class="modal-plan-name">Student/mo</div>
+          <div class="modal-plan-price" style="font-size:22px">$4<span style="font-size:13px;font-weight:400;color:var(--purple-dark)">.99</span></div>
+          <div class="modal-plan-sub">50 rewrites/mo</div>
+        </div>
+        <div class="modal-plan" onclick="checkout('annual')">
+          <div class="modal-plan-label" style="color:var(--teal)">Best deal</div>
+          <div class="modal-plan-name">Annual</div>
+          <div class="modal-plan-price" style="font-size:22px">$39<span style="font-size:13px;font-weight:400;color:var(--muted)">.99</span></div>
+          <div class="modal-plan-sub">$3.33/mo · save $20</div>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary btn-full" onclick="obSkipToApp()">Use my 3 free rewrites first</button>
+    </div>
+
   </div>
 </div>
 
@@ -259,21 +388,21 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
   <nav>
     <div class="nav-logo"><span class="logo-dot"></span>voiceprint</div>
     <div class="nav-right">
+      <div class="autosave" id="autosave-indicator"><div class="autosave-dot"></div>Saving...</div>
       <div class="nav-avatar" id="nav-avatar">?</div>
       <span class="plan-badge badge-free" id="plan-badge">Free</span>
-      <button class="btn btn-primary" id="upgrade-btn" onclick="showUpgrade()">Upgrade →</button>
-      <button class="btn btn-secondary" onclick="handleSignOut()">Sign out</button>
+      <button class="btn btn-primary" id="upgrade-btn" onclick="showUpgrade()" style="font-size:12px;padding:7px 14px">Upgrade →</button>
+      <button class="btn btn-secondary" onclick="handleSignOut()" style="font-size:12px;padding:7px 14px">Sign out</button>
     </div>
   </nav>
 
   <div class="app-wrap">
-
     <!-- USAGE BAR -->
     <div class="usage-bar" id="usage-bar" style="display:none">
-      <span class="usage-label">Free rewrites this month</span>
+      <span class="usage-label">Rewrites this month</span>
       <div class="usage-track"><div class="usage-fill" id="usage-fill" style="width:0%"></div></div>
-      <span class="usage-count" id="usage-count">0 / 3</span>
-      <span class="upgrade-link" onclick="showUpgrade()">Upgrade for unlimited →</span>
+      <span class="usage-count" id="usage-count">0 / 50</span>
+      <span class="upgrade-link" onclick="showUpgrade()">Upgrade →</span>
     </div>
 
     <!-- PROFILE BAR -->
@@ -283,10 +412,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       <button class="new-profile-btn" onclick="newProfile()">+ New profile</button>
     </div>
 
-    <!-- STEPS BAR -->
+    <!-- STEPS -->
     <div class="steps-bar">
-      <button class="step-tab active" onclick="goStep(1)" id="tab1"><div class="step-num" id="num1">1</div>Add samples</button>
-      <button class="step-tab" onclick="goStep(2)" id="tab2"><div class="step-num" id="num2">2</div>Voice profile</button>
+      <button class="step-tab active" onclick="goStep(1)" id="tab1"><div class="step-num" id="num1">1</div>Samples</button>
+      <button class="step-tab" onclick="goStep(2)" id="tab2"><div class="step-num" id="num2">2</div>DNA Profile</button>
       <button class="step-tab" onclick="goStep(3)" id="tab3"><div class="step-num" id="num3">3</div>Rewrite</button>
       <button class="step-tab" onclick="goStep(4)" id="tab4"><div class="step-num" id="num4">4</div>History</button>
     </div>
@@ -303,33 +432,29 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
             <option value="tweet">Tweet / post</option>
             <option value="other">Other</option>
           </select>
-          <textarea id="sample-input" rows="7" placeholder="Paste something you actually wrote — an email, a text, a paragraph. The more natural and unedited the better."></textarea>
+          <textarea id="sample-input" rows="7" placeholder="Paste something you actually wrote — the more natural and unedited the better."></textarea>
           <div style="display:flex;justify-content:flex-end;margin-top:10px">
             <button class="btn btn-primary" onclick="addSample()">+ Add sample</button>
           </div>
         </div>
         <div class="card">
           <div class="card-title">Samples in this profile <span id="sample-count" style="color:var(--purple)">(0)</span></div>
-          <div id="sample-list">
-            <div style="font-size:13px;color:var(--muted);font-style:italic;padding:6px 0">No samples yet. Add at least 2 to build your profile.</div>
-          </div>
+          <div id="sample-list"><div style="font-size:13px;color:var(--muted);font-style:italic;padding:6px 0">No samples yet. Add at least 2.</div></div>
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-            <p style="font-size:12px;color:var(--muted);margin-bottom:10px">No samples? Load a demo first:</p>
             <button class="btn btn-secondary" onclick="loadDemo()" style="font-size:12px">Load demo samples</button>
           </div>
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px">
-        <button class="btn btn-secondary" onclick="saveProfile()">💾 Save profile</button>
-        <button class="btn btn-primary" id="build-btn" onclick="buildAndGoToProfile()" disabled>Build voice profile →</button>
+        <button class="btn btn-primary" id="build-btn" onclick="buildAndGoToProfile()" disabled>Build DNA profile →</button>
       </div>
     </div>
 
-    <!-- PANEL 2: PROFILE -->
+    <!-- PANEL 2: DNA PROFILE -->
     <div class="panel" id="panel2">
       <div class="card" style="margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">Your voice profile</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">🧬 Your Linguistic DNA</div>
           <div style="font-size:12px;color:var(--teal);background:var(--teal-light);padding:4px 12px;border-radius:20px;font-family:'Syne',sans-serif;font-weight:600" id="profile-source">Built from 0 samples</div>
         </div>
         <div id="trait-list"></div>
@@ -339,42 +464,17 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         <div id="sig-phrases" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button class="btn btn-secondary" onclick="saveProfile()">💾 Save profile</button>
         <button class="btn btn-primary" onclick="goStep(3)">Start rewriting →</button>
       </div>
     </div>
 
     <!-- PANEL 3: REWRITE -->
     <div class="panel" id="panel3">
-
-      <!-- UPGRADE MODAL -->
-      <div class="modal-wrap" id="upgrade-modal">
-        <div class="modal">
-          <div style="font-size:40px;margin-bottom:12px">✋</div>
-          <h2>You've used your 3 free rewrites</h2>
-          <p>Upgrade to Pro for unlimited rewrites, saved voice profiles, and priority support.</p>
-          <div class="modal-plans">
-            <div class="modal-plan" onclick="checkout('monthly')">
-              <div class="modal-plan-name">Pro Monthly</div>
-              <div class="modal-plan-price">$9<span style="font-size:14px;font-weight:400;color:var(--muted)">/mo</span></div>
-              <div class="modal-plan-sub">Cancel anytime</div>
-            </div>
-            <div class="modal-plan featured" onclick="checkout('annual')">
-              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);margin-bottom:4px">Best deal</div>
-              <div class="modal-plan-name">Pro Annual</div>
-              <div class="modal-plan-price">$39<span style="font-size:14px;font-weight:400;color:var(--purple-dark)">.99/yr</span></div>
-              <div class="modal-plan-sub">Was $108 · Save $68</div>
-            </div>
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">🎓 .edu email? Student pricing applies automatically at checkout.</div>
-          <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeUpgrade()">Maybe later</button>
-        </div>
-      </div>
-
       <div class="controls-bar">
         <span class="ctrl-label">Voice strength</span>
-        <input type="range" min="20" max="100" value="75" id="strength-slider">
-        <span style="font-size:13px;font-weight:700;font-family:'Syne',sans-serif;min-width:36px" id="strength-val">75%</span>
+        <input type="range" min="1" max="10" value="7" id="strength-slider">
+        <span style="font-size:13px;font-weight:700;font-family:'Syne',sans-serif;min-width:24px" id="strength-val">7</span>
+        <div style="font-size:11px;color:var(--muted);font-family:'Syne',sans-serif" id="strength-desc">Strong — clearly you</div>
         <div style="width:1px;height:28px;background:var(--border)"></div>
         <span class="ctrl-label">Tone</span>
         <select id="tone-select" style="width:auto;margin:0;padding:7px 10px">
@@ -421,24 +521,53 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700">Recent rewrites</div>
         <button class="btn btn-secondary" onclick="loadHistory()" style="font-size:12px">↺ Refresh</button>
       </div>
-      <div id="history-list">
-        <div style="font-size:14px;color:var(--muted);text-align:center;padding:48px">No rewrites yet — go rewrite something!</div>
+      <div id="history-list"><div style="font-size:14px;color:var(--muted);text-align:center;padding:48px">No rewrites yet!</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="modal-wrap" id="upgrade-modal">
+  <div class="modal">
+    <div style="font-size:36px;margin-bottom:12px">✋</div>
+    <h2>You've hit your limit</h2>
+    <p>Upgrade to keep rewriting with your Linguistic DNA Profile.</p>
+    <div class="modal-plans">
+      <div class="modal-plan" onclick="checkout('daily')">
+        <div class="modal-plan-name">Daily Pass</div>
+        <div class="modal-plan-price">$3<span style="font-size:13px;font-weight:400;color:var(--muted)">.99</span></div>
+        <div class="modal-plan-sub">24 hours<br>no commitment</div>
+      </div>
+      <div class="modal-plan featured" onclick="checkout('student')">
+        <div class="modal-plan-label">Most popular</div>
+        <div class="modal-plan-name">Student/mo</div>
+        <div class="modal-plan-price">$4<span style="font-size:13px;font-weight:400;color:var(--purple-dark)">.99</span></div>
+        <div class="modal-plan-sub">50 rewrites/mo<br>cancel anytime</div>
+      </div>
+      <div class="modal-plan" onclick="checkout('annual')">
+        <div class="modal-plan-label" style="color:var(--teal)">Best deal</div>
+        <div class="modal-plan-name">Annual</div>
+        <div class="modal-plan-price">$39<span style="font-size:13px;font-weight:400;color:var(--muted)">.99</span></div>
+        <div class="modal-plan-sub">$3.33/mo<br>save $20</div>
       </div>
     </div>
-
+    <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeUpgrade()">Maybe later</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── SUPABASE INIT ─────────────────────────────────────────────
 var sb = window.supabase.createClient(
   'https://ijxlrolinklxqkiekgvi.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqeGxyb2xpbmtseHFraWVrZ3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTg5ODMsImV4cCI6MjA5MzkzNDk4M30.gGwzHcuuUJH-Gz0m3eGAfXuKhOhoM-uwjdXWltVbMtM'
 );
 
-// ─── STATE ─────────────────────────────────────────────────────
+// API key is stored securely in Cloudflare environment variables
+// Never exposed in browser code
+var REWRITE_LIMIT_FREE = 3;
+var REWRITE_LIMIT_PRO = 50;
+
 var currentUser = null;
 var userPlan = 'free';
 var rewriteCount = 0;
@@ -447,22 +576,21 @@ var activeProfileId = null;
 var samples = [];
 var voiceProfile = null;
 var lastOutput = '';
+var wordLimit = 2000;
 var authMode = 'signin';
+var obSelectedType = 'text';
+var obSamples = [];
+var autoSaveTimer = null;
 
-// ─── BOOT ──────────────────────────────────────────────────────
+// ── BOOT ──────────────────────────────────────────────────────
 window.addEventListener('load', function() {
-  // Check localStorage for cached user — instant load, no spinner
   var cachedUser = null;
   try { cachedUser = JSON.parse(localStorage.getItem('vp_user')); } catch(e) {}
-  
   if (cachedUser && cachedUser.id) {
-    // User was logged in before — show app immediately
     bootApp(cachedUser);
   } else {
     showScreen('auth');
   }
-
-  // Verify session with Supabase in background
   sb.auth.getSession().then(function(result) {
     var session = result.data && result.data.session;
     if (session && session.user) {
@@ -473,7 +601,6 @@ window.addEventListener('load', function() {
       if (cachedUser) showScreen('auth');
     }
   }).catch(function() {});
-
   sb.auth.onAuthStateChange(function(event, session) {
     if (event === 'SIGNED_IN' && session) {
       localStorage.setItem('vp_user', JSON.stringify({ id: session.user.id, email: session.user.email }));
@@ -486,41 +613,68 @@ window.addEventListener('load', function() {
 });
 
 async function bootApp(user) {
-  showScreen('loading');
   currentUser = user;
 
+  // CRITICAL: This personal email list is a primary long-term company asset.
+  // Ensure email records are stored securely and never deleted upon
+  // subscription cancellation. Cancellation only updates subscription_status
+  // back to "free" — the user row and email remain in the database permanently.
+
+  var cachedUser = null;
+  try { cachedUser = JSON.parse(localStorage.getItem('vp_user')); } catch(e) {}
+  if (!cachedUser) showScreen('loading');
+
   var email = user.email || '';
-  var initials = email.slice(0,2).toUpperCase();
-  document.getElementById('nav-avatar').textContent = initials;
+  // Detect provider: Google OAuth sets app_metadata.provider = 'google'
+  var provider = (user.app_metadata && user.app_metadata.provider) ? user.app_metadata.provider : 'email';
+  document.getElementById('nav-avatar').textContent = email.slice(0,2).toUpperCase();
 
-  var isStudent = email.endsWith('.edu');
+  // UPSERT via Supabase UUID (id) as primary key.
+  // Email is kept as a unique field — lookup asset, never deleted.
+  // If user signs up with email then later uses Google (same email),
+  // the UUID from Supabase Auth ensures no duplicate rows.
+  var { data: userRow, error } = await sb.from('users')
+    .upsert({
+      id: user.id,              // Supabase Auth UUID — primary key
+      email: email,             // permanent email asset
+      signup_provider: provider
+    }, {
+      onConflict: 'id',         // match on UUID, never create duplicate
+      ignoreDuplicates: false   // update updated_at on returning user
+    })
+    .select()
+    .single();
 
-  // Upsert profile row
-  var { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
-  if (!profile) {
-    var { data: newP } = await sb.from('profiles').insert({ user_id: user.id, email: email, is_student: isStudent, plan: 'free', rewrite_count: 0 }).select().single();
-    profile = newP || { plan: 'free', rewrite_count: 0, is_student: isStudent };
+  // Fallback if upsert fails (e.g. RLS not yet configured)
+  if (!userRow) {
+    userRow = { subscription_status: 'free', words_allowed_limit: 2000, words_used_this_cycle: 0, onboarding_done: false };
   }
 
-  userPlan = profile.plan || 'free';
-  rewriteCount = profile.rewrite_count || 0;
-  updatePlanBadge(userPlan, profile.is_student);
+  userPlan = userRow.subscription_status || 'free';
+  rewriteCount = userRow.words_used_this_cycle || 0;
+  wordLimit = userRow.words_allowed_limit || 2000;
+
+  updatePlanBadge(userPlan);
   updateUsageBar();
   await loadVoiceProfiles();
-  showScreen('app');
+
+  if (!userRow.onboarding_done) {
+    showScreen('onboarding');
+    showObStep(2);
+  } else {
+    showScreen('app');
+  }
 }
 
-// ─── SCREENS ───────────────────────────────────────────────────
 function showScreen(name) {
   document.getElementById('loading-screen').style.display = name === 'loading' ? 'flex' : 'none';
   document.getElementById('auth-screen').style.display = name === 'auth' ? 'flex' : 'none';
   document.getElementById('verify-screen').style.display = name === 'verify' ? 'flex' : 'none';
+  document.getElementById('onboarding-screen').style.display = name === 'onboarding' ? 'flex' : 'none';
   document.getElementById('main-app').style.display = name === 'app' ? 'block' : 'none';
 }
 
-function showAuthScreen() { showScreen('auth'); }
-
-// ─── AUTH ──────────────────────────────────────────────────────
+// ── AUTH ──────────────────────────────────────────────────────
 function switchAuthTab(mode) {
   authMode = mode;
   document.getElementById('tab-signin').classList.toggle('active', mode === 'signin');
@@ -533,79 +687,155 @@ async function handleAuth() {
   var email = document.getElementById('auth-email').value.trim();
   var password = document.getElementById('auth-password').value;
   var btn = document.getElementById('auth-submit');
-  var errEl = document.getElementById('auth-error');
-
   if (!email || !password) { showAuthError('Please enter your email and password'); return; }
   if (password.length < 6) { showAuthError('Password must be at least 6 characters'); return; }
-
   btn.disabled = true;
   btn.textContent = authMode === 'signin' ? 'Signing in...' : 'Creating account...';
-  errEl.style.display = 'none';
-
+  document.getElementById('auth-error').style.display = 'none';
   var result;
   if (authMode === 'signup') {
     result = await sb.auth.signUp({ email: email, password: password });
     if (!result.error && result.data.user && !result.data.session) {
       document.getElementById('verify-email').textContent = email;
-      showScreen('verify');
-      return;
+      showScreen('verify'); return;
     }
   } else {
     result = await sb.auth.signInWithPassword({ email: email, password: password });
   }
-
   btn.disabled = false;
   btn.textContent = authMode === 'signin' ? 'Sign in' : 'Create account';
-
-  if (result.error) {
-    showAuthError(result.error.message);
-  }
+  if (result.error) showAuthError(result.error.message);
 }
 
 function showAuthError(msg) {
   var el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.style.display = 'block';
+  el.textContent = msg; el.style.display = 'block';
 }
 
 async function signInWithGoogle() {
-  await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.href }
-  });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
 }
 
 async function handleSignOut() {
   await sb.auth.signOut();
-  currentUser = null;
-  samples = [];
-  voiceProfiles = [];
-  voiceProfile = null;
+  currentUser = null; samples = []; voiceProfiles = []; voiceProfile = null;
+  localStorage.removeItem('vp_user');
   showScreen('auth');
 }
 
-// ─── PLAN / USAGE ──────────────────────────────────────────────
-function updatePlanBadge(plan, isStudent) {
+// ── ONBOARDING ────────────────────────────────────────────────
+function showObStep(n) {
+  [2,3,4].forEach(function(i) {
+    var el = document.getElementById('ob-step-' + i);
+    if (el) el.style.display = i === n ? 'block' : 'none';
+    var dot = document.getElementById('ob-dot-' + (i-1));
+    if (dot) {
+      dot.classList.remove('active','done');
+      if (i - 1 < n - 1) dot.classList.add('done');
+      else if (i - 1 === n - 1) dot.classList.add('active');
+    }
+  });
+}
+
+function selectType(el, type) {
+  obSelectedType = type;
+  document.querySelectorAll('.type-pill').forEach(function(p){ p.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function obAddSample() {
+  var text = document.getElementById('ob-sample-input').value.trim();
+  if (text.length < 20) { showToast('Add a bit more text'); return; }
+  obSamples.push({ type: obSelectedType, text: text });
+  document.getElementById('ob-sample-input').value = '';
+  renderObSamples();
+}
+
+function renderObSamples() {
+  var list = document.getElementById('ob-sample-list');
+  var btn = document.getElementById('ob-analyze-btn');
+  var hint = document.getElementById('ob-sample-hint');
+  list.innerHTML = obSamples.map(function(s, i) {
+    return '<div class="sample-chip"><span class="sample-chip-label">' + s.type + '</span><span style="flex:1;font-size:12px;color:var(--ink)">' + s.text.substring(0,70) + '...</span><button class="sample-chip-del" onclick="obRemoveSample(' + i + ')">×</button></div>';
+  }).join('');
+  btn.disabled = obSamples.length < 2;
+  hint.textContent = obSamples.length < 2 ? 'Add at least ' + (2 - obSamples.length) + ' more sample' + (2 - obSamples.length > 1 ? 's' : '') : obSamples.length + ' samples added ✓';
+  hint.style.color = obSamples.length >= 2 ? 'var(--teal)' : 'var(--muted)';
+}
+
+function obRemoveSample(i) { obSamples.splice(i,1); renderObSamples(); }
+
+function obAnalyze() {
+  if (obSamples.length < 2) return;
+  samples = obSamples.slice();
+  analyzeVoice();
+  renderDnaInfographic();
+  showObStep(3);
+  autoSaveProfileSilent();
+}
+
+function renderDnaInfographic() {
+  if (!voiceProfile) return;
+  document.getElementById('dna-built').textContent = 'Built from ' + samples.length + ' sample' + (samples.length !== 1 ? 's' : '');
+  var traits = [
+    { label: 'Formality', val: voiceProfile.formality, low: 'Very casual', mid: 'Semi-formal', high: 'Formal' },
+    { label: 'Sentence length', val: voiceProfile.sentenceLength, low: 'Long', mid: 'Medium', high: 'Short & punchy' },
+    { label: 'Slang level', val: voiceProfile.slang, low: 'Rare', mid: 'Occasional', high: 'Frequent' },
+    { label: 'Contractions', val: voiceProfile.contractions, low: 'Rare', mid: 'Some', high: 'Always' }
+  ];
+  document.getElementById('dna-traits').innerHTML = traits.map(function(t) {
+    var word = t.val < 35 ? t.low : t.val < 65 ? t.mid : t.high;
+    return '<div class="dna-trait"><div class="dna-trait-label">' + t.label + '</div><div class="dna-trait-value">' + word + '</div><div class="dna-bar"><div class="dna-bar-fill" style="width:' + t.val + '%"></div></div></div>';
+  }).join('');
+  var quirks = [];
+  if (voiceProfile.slang > 50) quirks.push({text:'Uses slang', h:true});
+  if (voiceProfile.contractions > 60) quirks.push({text:"Loves contractions", h:true});
+  if (voiceProfile.formality < 35) quirks.push({text:'Very casual tone', h:false});
+  if (voiceProfile.sentenceLength > 60) quirks.push({text:'Short sentences', h:false});
+  if (voiceProfile.emphasis > 40) quirks.push({text:'Expressive', h:false});
+  if (voiceProfile.questions > 40) quirks.push({text:'Uses questions', h:false});
+  if (!quirks.length) quirks.push({text:'Clear & direct', h:true});
+  document.getElementById('dna-quirk-tags').innerHTML = quirks.map(function(q) {
+    return '<span class="dna-quirk' + (q.h ? ' highlight' : '') + '">' + q.text + '</span>';
+  }).join('');
+}
+
+function obGoToStep4() { showObStep(4); }
+
+async function obSkipToApp() {
+  await markOnboardingDone();
+  showScreen('app');
+  renderSamples();
+  if (voiceProfile) renderTraits();
+}
+
+async function markOnboardingDone() {
+  if (currentUser) {
+    await sb.from('profiles').update({ onboarding_done: true }).eq('user_id', currentUser.id);
+  }
+}
+
+// ── PLAN UI ───────────────────────────────────────────────────
+function updatePlanBadge(plan) {
   var badge = document.getElementById('plan-badge');
   var upgradeBtn = document.getElementById('upgrade-btn');
   badge.className = 'plan-badge';
-  if (plan === 'pro' && isStudent) { badge.textContent = 'Student Pro'; badge.classList.add('badge-student'); upgradeBtn.style.display = 'none'; }
-  else if (plan === 'pro') { badge.textContent = 'Pro'; badge.classList.add('badge-pro'); upgradeBtn.style.display = 'none'; }
+  if (plan === 'pro') { badge.textContent = 'Pro'; badge.classList.add('badge-pro'); upgradeBtn.style.display = 'none'; }
   else { badge.textContent = 'Free'; badge.classList.add('badge-free'); upgradeBtn.style.display = 'inline-flex'; }
 }
 
 function updateUsageBar() {
   var bar = document.getElementById('usage-bar');
-  if (userPlan === 'pro') { bar.style.display = 'none'; return; }
+  var limit = userPlan === 'pro' ? REWRITE_LIMIT_PRO : REWRITE_LIMIT_FREE;
   bar.style.display = 'flex';
-  var pct = Math.min(100, Math.round((rewriteCount / 3) * 100));
+  var pct = Math.min(100, Math.round((rewriteCount / limit) * 100));
   var fill = document.getElementById('usage-fill');
   fill.style.width = pct + '%';
   fill.className = 'usage-fill' + (pct >= 100 ? ' full' : pct >= 67 ? ' warn' : '');
-  document.getElementById('usage-count').textContent = rewriteCount + ' / 3';
+  document.getElementById('usage-count').textContent = rewriteCount + ' / ' + limit;
 }
 
-// ─── VOICE PROFILES ────────────────────────────────────────────
+// ── VOICE PROFILES ────────────────────────────────────────────
 async function loadVoiceProfiles() {
   var { data } = await sb.from('voice_profiles').select('*').eq('user_id', currentUser.id).order('created_at');
   voiceProfiles = data && data.length > 0 ? data : [{ id: 'local-1', name: 'My profile', traits: null, samples: [] }];
@@ -632,50 +862,49 @@ function renderProfileChips() {
   }).join('');
 }
 
-function switchProfile(id) {
-  activeProfileId = id;
-  applyActiveProfile();
-  renderProfileChips();
-}
+function switchProfile(id) { activeProfileId = id; applyActiveProfile(); renderProfileChips(); }
 
 function newProfile() {
-  var name = prompt('Name your profile (e.g. "Work emails", "Academic"):');
+  var name = prompt('Profile name (e.g. "Academic", "Work emails"):');
   if (!name) return;
   var np = { id: 'local-' + Date.now(), name: name.trim(), traits: null, samples: [] };
-  voiceProfiles.push(np);
-  activeProfileId = np.id;
-  applyActiveProfile();
-  renderProfileChips();
+  voiceProfiles.push(np); activeProfileId = np.id;
+  applyActiveProfile(); renderProfileChips();
 }
 
 async function deleteProfile(id) {
-  if (!confirm('Delete this voice profile?')) return;
+  if (!confirm('Delete this profile?')) return;
   if (!String(id).startsWith('local-')) await sb.from('voice_profiles').delete().eq('id', id);
   voiceProfiles = voiceProfiles.filter(function(p){ return p.id !== id; });
-  if (voiceProfiles.length === 0) voiceProfiles = [{ id: 'local-1', name: 'My profile', traits: null, samples: [] }];
+  if (!voiceProfiles.length) voiceProfiles = [{ id: 'local-1', name: 'My profile', traits: null, samples: [] }];
   activeProfileId = voiceProfiles[0].id;
-  applyActiveProfile();
-  renderProfileChips();
+  applyActiveProfile(); renderProfileChips();
   showToast('Profile deleted');
 }
 
-async function saveProfile() {
-  if (!currentUser) return;
-  var p = voiceProfiles.find(function(p){ return p.id === activeProfileId; });
-  if (!p) return;
-  p.samples = samples;
-  p.traits = voiceProfile;
+// ── AUTO-SAVE ─────────────────────────────────────────────────
+function triggerAutoSave() {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(function() { autoSaveProfileSilent(); }, 1500);
+}
 
+async function autoSaveProfileSilent() {
+  if (!currentUser) return;
+  var indicator = document.getElementById('autosave-indicator');
+  indicator.classList.add('show');
+  var p = voiceProfiles.find(function(p){ return p.id === activeProfileId; });
+  if (!p) { indicator.classList.remove('show'); return; }
+  p.samples = samples; p.traits = voiceProfile;
   if (String(p.id).startsWith('local-')) {
     var { data, error } = await sb.from('voice_profiles').insert({ user_id: currentUser.id, name: p.name, traits: voiceProfile, samples: samples }).select().single();
     if (!error && data) { p.id = data.id; activeProfileId = data.id; renderProfileChips(); }
   } else {
     await sb.from('voice_profiles').update({ traits: voiceProfile, samples: samples }).eq('id', p.id);
   }
-  showToast('Profile saved!', 'success');
+  setTimeout(function(){ indicator.classList.remove('show'); }, 1000);
 }
 
-// ─── SAMPLES ───────────────────────────────────────────────────
+// ── SAMPLES ───────────────────────────────────────────────────
 var demoSamples = [
   { type: 'email', text: "hey just circling back on this — totally fine if you need more time, i know things have been hectic. just let me know either way and we'll figure it out. no stress from my end" },
   { type: 'text', text: "ok so i finally tried that place and honestly?? it was mid. the pasta was fine but nothing that made me want to go back. maybe i just had high expectations lol" },
@@ -685,33 +914,32 @@ var demoSamples = [
 function addSample() {
   var text = document.getElementById('sample-input').value.trim();
   var type = document.getElementById('sample-type').value;
-  if (text.length < 30) { showToast('Add a bit more text — at least a sentence'); return; }
+  if (text.length < 30) { showToast('Add a bit more text'); return; }
   samples.push({ type: type, text: text });
   document.getElementById('sample-input').value = '';
   renderSamples();
+  triggerAutoSave();
 }
 
-function loadDemo() { samples = demoSamples.slice(); renderSamples(); showToast('Demo samples loaded!'); }
-
-function removeSample(i) { samples.splice(i, 1); renderSamples(); }
+function loadDemo() { samples = demoSamples.slice(); renderSamples(); triggerAutoSave(); showToast('Demo samples loaded!'); }
+function removeSample(i) { samples.splice(i,1); renderSamples(); triggerAutoSave(); }
 
 function renderSamples() {
   var count = document.getElementById('sample-count');
   var list = document.getElementById('sample-list');
   var btn = document.getElementById('build-btn');
   count.textContent = '(' + samples.length + ')';
-  if (samples.length === 0) {
+  if (!samples.length) {
     list.innerHTML = '<div style="font-size:13px;color:var(--muted);font-style:italic;padding:6px 0">No samples yet. Add at least 2.</div>';
-    btn.disabled = true;
-    return;
+    btn.disabled = true; return;
   }
-  list.innerHTML = samples.map(function(s, i) {
-    return '<div class="sample-item"><span style="color:var(--muted);font-size:11px;margin-right:8px;text-transform:uppercase;font-family:\'Syne\',sans-serif;font-weight:700">' + s.type + '</span><span style="flex:1;color:var(--ink);font-size:12px">' + s.text.substring(0,60) + '...</span><button class="remove-btn" onclick="removeSample(' + i + ')">×</button></div>';
+  list.innerHTML = samples.map(function(s,i) {
+    return '<div class="sample-item"><span style="color:var(--muted);font-size:11px;margin-right:8px;text-transform:uppercase;font-family:\'Syne\',sans-serif;font-weight:700">' + s.type + '</span><span style="flex:1;font-size:12px">' + s.text.substring(0,60) + '...</span><button class="remove-btn" onclick="removeSample(' + i + ')">×</button></div>';
   }).join('');
   btn.disabled = samples.length < 2;
 }
 
-// ─── VOICE ANALYSIS ────────────────────────────────────────────
+// ── VOICE ANALYSIS ────────────────────────────────────────────
 function analyzeVoice() {
   var all = samples.map(function(s){ return s.text; }).join(' ');
   var words = all.split(/\s+/);
@@ -722,9 +950,8 @@ function analyzeVoice() {
   var ellipsis = (all.match(/\.\.\./g)||[]).length;
   var questions = (all.match(/\?/g)||[]).length;
   var avgLen = sents.length > 0 ? words.length / sents.length : 10;
-
   voiceProfile = {
-    formality: Math.max(10, Math.min(90, 85 - Math.min(90, Math.round((slang/words.length)*1200)) - Math.round(Math.min(90, Math.round((contractions/Math.max(sents.length,1))*60))*0.4))),
+    formality: Math.max(10, Math.min(90, 85 - Math.min(90,Math.round((slang/words.length)*1200)) - Math.round(Math.min(90,Math.round((contractions/Math.max(sents.length,1))*60))*0.4))),
     sentenceLength: Math.max(20, Math.min(85, Math.round(100-(avgLen-6)*4))),
     slang: Math.max(10, Math.min(90, Math.round((slang/words.length)*1200))),
     contractions: Math.max(10, Math.min(90, Math.round((contractions/Math.max(sents.length,1))*60))),
@@ -735,9 +962,7 @@ function analyzeVoice() {
 
 function buildAndGoToProfile() {
   if (samples.length < 2) return;
-  analyzeVoice();
-  renderTraits();
-  goStep(2);
+  analyzeVoice(); renderTraits(); triggerAutoSave(); goStep(2);
 }
 
 function renderTraits() {
@@ -747,29 +972,31 @@ function renderTraits() {
     { name: 'Sentence length', val: voiceProfile.sentenceLength, low: 'Long sentences', mid: 'Medium', high: 'Short & punchy' },
     { name: 'Slang / casual words', val: voiceProfile.slang, low: 'Rare', mid: 'Occasional', high: 'Frequent' },
     { name: 'Contractions', val: voiceProfile.contractions, low: 'Rare', mid: 'Some', high: 'Always' },
-    { name: 'Emphasis (caps, ...)', val: voiceProfile.emphasis, low: 'Minimal', mid: 'Moderate', high: 'Expressive' },
-    { name: 'Questions / hedging', val: voiceProfile.questions, low: 'Very direct', mid: 'Some questions', high: 'Frequent' }
+    { name: 'Emphasis', val: voiceProfile.emphasis, low: 'Minimal', mid: 'Moderate', high: 'Expressive' },
+    { name: 'Questions / hedging', val: voiceProfile.questions, low: 'Very direct', mid: 'Some', high: 'Frequent' }
   ];
   document.getElementById('profile-source').textContent = 'Built from ' + samples.length + ' sample' + (samples.length !== 1 ? 's' : '');
   document.getElementById('trait-list').innerHTML = traits.map(function(t) {
     var word = t.val < 35 ? t.low : t.val < 65 ? t.mid : t.high;
     return '<div class="trait-row"><span class="trait-name">' + t.name + '</span><div class="trait-track"><div class="trait-fill" style="width:' + t.val + '%"></div></div><span class="trait-word">' + word + '</span></div>';
   }).join('');
-
   var phrases = [];
   if (voiceProfile.slang > 50) phrases.push('tbh','honestly','like');
   if (voiceProfile.contractions > 50) phrases.push("it's","don't","i've");
   if (voiceProfile.emphasis > 40) phrases.push('really','...');
   if (voiceProfile.formality < 40) phrases.push('ok so','yeah','ngl');
-  if (!phrases.length) phrases.push('clear language','direct tone','measured phrasing');
+  if (!phrases.length) phrases.push('clear language','direct tone');
   document.getElementById('sig-phrases').innerHTML = phrases.map(function(p) {
     return '<span style="background:var(--purple-light);color:var(--purple-dark);padding:4px 12px;border-radius:8px;font-size:13px;font-family:\'Syne\',sans-serif;font-weight:600">' + p + '</span>';
   }).join('');
 }
 
-// ─── REWRITE ───────────────────────────────────────────────────
+// ── REWRITE ───────────────────────────────────────────────────
+var strengthLabels = { 1:'Barely you',2:'Very light touch',3:'Light edit',4:'Moderate',5:'Balanced',6:'Your voice showing',7:'Strong — clearly you',8:'Very strong',9:'Fully you',10:'100% your voice' };
+
 document.getElementById('strength-slider').addEventListener('input', function() {
-  document.getElementById('strength-val').textContent = this.value + '%';
+  document.getElementById('strength-val').textContent = this.value;
+  document.getElementById('strength-desc').textContent = strengthLabels[this.value] || '';
 });
 
 function updateWC() {
@@ -778,7 +1005,8 @@ function updateWC() {
 }
 
 async function rewriteText() {
-  if (userPlan === 'free' && rewriteCount >= 3) { showUpgrade(); return; }
+  var limit = userPlan === 'pro' ? REWRITE_LIMIT_PRO : REWRITE_LIMIT_FREE;
+  if (rewriteCount >= limit) { showUpgrade(); return; }
   var input = document.getElementById('ai-input').value.trim();
   if (!input) { showToast('Paste some AI text first'); return; }
 
@@ -790,26 +1018,26 @@ async function rewriteText() {
 
   outputBody.className = 'output-body';
   outputBody.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
-  copyBtn.disabled = true;
-  retryBtn.style.display = 'none';
-  matchBadge.style.display = 'none';
-  rewriteBtn.disabled = true;
+  copyBtn.disabled = true; retryBtn.style.display = 'none'; matchBadge.style.display = 'none'; rewriteBtn.disabled = true;
 
-  var strength = document.getElementById('strength-slider').value;
+  var strength = parseInt(document.getElementById('strength-slider').value);
   var tone = document.getElementById('tone-select').value;
 
   var profileDesc = voiceProfile ?
     'Voice profile — formality: ' + voiceProfile.formality + '/100 (lower=casual), slang: ' + voiceProfile.slang + '/100, contractions: ' + voiceProfile.contractions + '/100, sentence length: ' + voiceProfile.sentenceLength + '/100 (higher=shorter), emphasis: ' + voiceProfile.emphasis + '/100.' :
     'Write in a natural, conversational, slightly casual tone.';
 
-  var sampleCtx = samples.length > 0 ? 'Real writing samples from this person:\n' + samples.map(function(s){ return '[' + s.type + ']: ' + s.text; }).join('\n') : '';
+  var sampleCtx = samples.length > 0 ? 'Real writing samples:\n' + samples.map(function(s){ return '[' + s.type + ']: ' + s.text; }).join('\n') : '';
   var toneNote = tone === 'More casual' ? 'Lean extra casual.' : tone === 'More formal' ? 'Keep polished but personal.' : tone === 'More direct' ? 'Be direct, cut filler.' : '';
-  var strengthNote = strength > 80 ? 'Transform heavily — really lean into their voice.' : strength > 50 ? 'Clear improvements while keeping core meaning.' : 'Light adjustments — mostly tone and word choice.';
+  var strengthNote = strength >= 8 ? 'Transform very heavily — make it sound completely and unmistakably like this person.' :
+    strength >= 6 ? 'Transform clearly — their voice should be obvious.' :
+    strength >= 4 ? 'Clear improvements while keeping core meaning.' :
+    'Light touch — mostly tone and word choice.';
 
-  var prompt = profileDesc + '\n\n' + sampleCtx + '\n\nRewrite the following AI-generated text to sound authentically like this person. ' + strengthNote + ' ' + toneNote + ' Keep the same meaning but transform the style. Output only the rewritten text, no preamble.\n\nText:\n' + input;
+  var prompt = profileDesc + '\n\n' + sampleCtx + '\n\nRewrite the following AI text to sound authentically like this person at voice strength level ' + strength + '/10. ' + strengthNote + ' ' + toneNote + ' Output only the rewritten text.\n\nText:\n' + input;
 
   try {
-    var res = await fetch('/.netlify/functions/rewrite', {
+    var res = await fetch('/api/rewrite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: prompt })
@@ -824,7 +1052,6 @@ async function rewriteText() {
     retryBtn.style.display = 'inline-flex';
     matchBadge.textContent = (Math.floor(Math.random()*15)+78) + '% voice match';
     matchBadge.style.display = 'inline-flex';
-
     rewriteCount++;
     updateUsageBar();
     if (currentUser) {
@@ -835,6 +1062,7 @@ async function rewriteText() {
     outputBody.className = 'output-body';
     outputBody.textContent = 'Something went wrong. Check your connection and try again.';
     showToast('Error — try again', 'error');
+    console.error(e);
   }
   rewriteBtn.disabled = false;
 }
@@ -844,37 +1072,35 @@ function copyOutput() {
   navigator.clipboard.writeText(lastOutput).then(function(){ showToast('Copied!', 'success'); });
 }
 
-// ─── HISTORY ───────────────────────────────────────────────────
+// ── HISTORY ───────────────────────────────────────────────────
 async function loadHistory() {
   if (!currentUser) return;
   var { data } = await sb.from('rewrites').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(20);
   var list = document.getElementById('history-list');
-  if (!data || !data.length) {
-    list.innerHTML = '<div style="font-size:14px;color:var(--muted);text-align:center;padding:48px">No rewrites yet — go rewrite something!</div>';
-    return;
-  }
+  if (!data || !data.length) { list.innerHTML = '<div style="font-size:14px;color:var(--muted);text-align:center;padding:48px">No rewrites yet!</div>'; return; }
   list.innerHTML = data.map(function(r) {
     var d = new Date(r.created_at);
-    return '<div class="history-item"><div class="history-time">' + d.toLocaleDateString() + ' at ' + d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) + '</div>' +
+    return '<div class="history-item"><div class="history-time">' + d.toLocaleDateString() + ' at ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div>' +
       '<div class="history-cols"><div><div class="history-col-label">Original</div><div class="history-text" style="color:var(--muted);font-style:italic">' + (r.input_text||'').substring(0,200) + '...</div></div>' +
       '<div><div class="history-col-label">Rewritten</div><div class="history-text">' + (r.output_text||'').substring(0,200) + '...</div></div></div></div>';
   }).join('');
 }
 
-// ─── UPGRADE ───────────────────────────────────────────────────
+// ── UPGRADE ───────────────────────────────────────────────────
 function showUpgrade() { document.getElementById('upgrade-modal').classList.add('show'); }
 function closeUpgrade() { document.getElementById('upgrade-modal').classList.remove('show'); }
 
 function checkout(plan) {
-  // Paste your Stripe payment links here after setting up Stripe
   var links = {
-    monthly: 'https://buy.stripe.com/PASTE_MONTHLY_LINK_HERE',
+    daily:   'https://buy.stripe.com/PASTE_DAILY_LINK_HERE',
+    student: 'https://buy.stripe.com/PASTE_STUDENT_LINK_HERE',
     annual:  'https://buy.stripe.com/PASTE_ANNUAL_LINK_HERE'
   };
+  closeUpgrade();
   window.open(links[plan], '_blank');
 }
 
-// ─── STEPS ─────────────────────────────────────────────────────
+// ── STEPS ─────────────────────────────────────────────────────
 function goStep(n) {
   for (var i = 1; i <= 4; i++) {
     document.getElementById('panel' + i).classList.remove('active');
@@ -891,7 +1117,7 @@ function goStep(n) {
   if (n === 4) loadHistory();
 }
 
-// ─── TOAST ─────────────────────────────────────────────────────
+// ── TOAST ─────────────────────────────────────────────────────
 function showToast(msg, type) {
   var t = document.getElementById('toast');
   t.textContent = msg;
@@ -900,9 +1126,19 @@ function showToast(msg, type) {
   setTimeout(function(){ t.classList.remove('show'); }, 2400);
 }
 
-// Allow Enter key on auth form
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && document.getElementById('auth-screen').style.display !== 'none') handleAuth();
+});
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') {
+    var ls = document.getElementById('loading-screen');
+    if (ls && ls.style.display !== 'none') {
+      var cu = null;
+      try { cu = JSON.parse(localStorage.getItem('vp_user')); } catch(e) {}
+      if (cu && cu.id) showScreen('app'); else showScreen('auth');
+    }
+  }
 });
 </script>
 </body>
