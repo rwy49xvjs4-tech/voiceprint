@@ -633,21 +633,24 @@ async function bootApp(user) {
   // Email is kept as a unique field — lookup asset, never deleted.
   // If user signs up with email then later uses Google (same email),
   // the UUID from Supabase Auth ensures no duplicate rows.
-  var { data: userRow, error } = await sb.from('users')
-    .upsert({
-      id: user.id,              // Supabase Auth UUID — primary key
-      email: email,             // permanent email asset
-      signup_provider: provider
-    }, {
-      onConflict: 'id',         // match on UUID, never create duplicate
-      ignoreDuplicates: false   // update updated_at on returning user
-    })
-    .select()
-    .single();
-
-  // Fallback if upsert fails (e.g. RLS not yet configured)
-  if (!userRow) {
-    userRow = { subscription_status: 'free', words_allowed_limit: 2000, words_used_this_cycle: 0, onboarding_done: false };
+  // Check if user already exists first — never overwrite onboarding_done
+  var { data: existingUser } = await sb.from('users').select('*').eq('id', user.id).maybeSingle();
+  var userRow;
+  if (!existingUser) {
+    // New user — create row
+    var { data: newUser } = await sb.from('users').insert({
+      id: user.id,
+      email: email,
+      signup_provider: provider,
+      subscription_status: 'free',
+      words_allowed_limit: 2000,
+      words_used_this_cycle: 0,
+      onboarding_done: false
+    }).select().single();
+    userRow = newUser || { subscription_status: 'free', words_allowed_limit: 2000, words_used_this_cycle: 0, onboarding_done: false };
+  } else {
+    // Returning user — never touch onboarding_done
+    userRow = existingUser;
   }
 
   userPlan = userRow.subscription_status || 'free';
