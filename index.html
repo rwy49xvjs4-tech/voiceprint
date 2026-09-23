@@ -633,11 +633,10 @@ async function bootApp(user) {
   // Email is kept as a unique field — lookup asset, never deleted.
   // If user signs up with email then later uses Google (same email),
   // the UUID from Supabase Auth ensures no duplicate rows.
-  // Check if user already exists first — never overwrite onboarding_done
+  // Try to get or create user row
   var { data: existingUser } = await sb.from('users').select('*').eq('id', user.id).maybeSingle();
   var userRow;
   if (!existingUser) {
-    // New user — create row
     var { data: newUser } = await sb.from('users').insert({
       id: user.id,
       email: email,
@@ -649,9 +648,13 @@ async function bootApp(user) {
     }).select().single();
     userRow = newUser || { subscription_status: 'free', words_allowed_limit: 2000, words_used_this_cycle: 0, onboarding_done: false };
   } else {
-    // Returning user — never touch onboarding_done
     userRow = existingUser;
   }
+  
+  // Override onboarding_done with localStorage — works even if DB fails
+  var localDone = false;
+  try { localDone = localStorage.getItem('vp_ob_' + user.id) === '1'; } catch(e) {}
+  if (localDone) userRow.onboarding_done = true;
 
   userPlan = userRow.subscription_status || 'free';
   rewriteCount = userRow.words_used_this_cycle || 0;
@@ -662,16 +665,10 @@ async function bootApp(user) {
   await loadVoiceProfiles();
 
   // Check localStorage first for instant load, then verify with DB
-  var localOnboarding = false;
-  try { localOnboarding = localStorage.getItem('vp_onboarding_done_' + user.id) === '1'; } catch(e) {}
-  if (!userRow.onboarding_done && !localOnboarding) {
+  if (!userRow.onboarding_done) {
     showScreen('onboarding');
     showObStep(2);
   } else {
-    // Make sure DB is in sync
-    if (localOnboarding && !userRow.onboarding_done) {
-      sb.from('users').update({ onboarding_done: true }).eq('id', user.id);
-    }
     showScreen('app');
   }
 }
@@ -821,8 +818,10 @@ async function obSkipToApp() {
 
 async function markOnboardingDone() {
   if (currentUser) {
-    await sb.from('users').update({ onboarding_done: true }).eq('id', currentUser.id);
-    try { localStorage.setItem('vp_onboarding_done_' + currentUser.id, '1'); } catch(e) {}
+    // Save to localStorage immediately — works even if DB is slow
+    try { localStorage.setItem('vp_ob_' + currentUser.id, '1'); } catch(e) {}
+    // Also save to DB in background
+    sb.from('users').update({ onboarding_done: true }).eq('id', currentUser.id);
   }
 }
 
