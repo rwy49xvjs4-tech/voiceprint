@@ -1,39 +1,24 @@
-/**
- * VOICEPRINT — Cloudflare Worker
- * 
- * This worker does two things:
- * 1. Serves the static HTML app (index.html)
- * 2. Handles /api/rewrite — calls Anthropic API securely
- *    using the ANTHROPIC_API_KEY environment variable.
- *    The key is NEVER exposed to the browser.
- */
-
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      });
+    }
+
     // ── SECURE REWRITE ENDPOINT ──────────────────────────────
     if (url.pathname === '/api/rewrite' && request.method === 'POST') {
-      
-      // Only allow POST from your own domain
-      const origin = request.headers.get('Origin') || '';
-      const allowedOrigins = [
-        'https://voiceprint.fistumbellaire123.workers.dev',
-        'https://voiceprinthumanizer.com',
-        'http://localhost:3000'
-      ];
-
       const corsHeaders = {
-        'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
       };
-
-      // Handle preflight
-      if (request.method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders });
-      }
 
       try {
         const body = await request.json();
@@ -46,17 +31,15 @@ export default {
           );
         }
 
-        // Call Anthropic API — key is securely stored in env variable
-        // NEVER exposed to the browser
         const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': env.ANTHROPIC_API_KEY,  // secure — from Cloudflare env
+            'x-api-key': env.ANTHROPIC_API_KEY,
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-sonnet-4-6',
             max_tokens: 1000,
             messages: [{ role: 'user', content: prompt }]
           })
@@ -80,14 +63,13 @@ export default {
 
       } catch (err) {
         return new Response(
-          JSON.stringify({ error: 'Server error — try again' }),
+          JSON.stringify({ error: err.message || 'Server error' }),
           { status: 500, headers: corsHeaders }
         );
       }
     }
 
-    // ── STATIC ASSETS (serves index.html and other files) ────
-    // All other requests are handled by Cloudflare's static asset serving
+    // ── STATIC ASSETS ────────────────────────────────────────
     return env.ASSETS.fetch(request);
   }
 };
