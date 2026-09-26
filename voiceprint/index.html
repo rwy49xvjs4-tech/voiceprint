@@ -166,19 +166,25 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
 
 /* UPGRADE MODAL */
-.modal-wrap { display: none; min-height: 480px; background: rgba(14,13,11,0.5); align-items: center; justify-content: center; border-radius: 20px; margin-bottom: 20px; }
+.modal-wrap { display: none; position: fixed; inset: 0; background: rgba(14,13,11,0.6); backdrop-filter: blur(6px); align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
 .modal-wrap.show { display: flex; }
-.modal { background: var(--card); border-radius: 20px; padding: 36px; max-width: 460px; width: 100%; text-align: center; }
-.modal h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-.modal p { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.65; }
-.modal-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-.modal-plan { border: 1px solid var(--border); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.15s; text-align: left; }
-.modal-plan:hover { border-color: var(--purple); background: var(--purple-light); }
-.modal-plan.featured { border: 2px solid var(--purple); background: var(--purple-light); }
-.modal-plan-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.modal-plan-price { font-size: 24px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--purple); }
-.modal-plan-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
-.modal-plan.featured .modal-plan-sub { color: var(--purple-dark); }
+.modal { background: var(--card); border-radius: 28px; padding: 40px 36px 32px; max-width: 520px; width: 100%; text-align: center; box-shadow: 0 24px 64px rgba(14,13,11,0.18); }
+.modal-eyebrow { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple); margin-bottom: 10px; }
+.modal h2 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+.modal p { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.7; }
+.modal-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.modal-plan { border: 1.5px solid var(--border); border-radius: 18px; padding: 20px 18px; cursor: pointer; transition: all 0.18s; text-align: left; position: relative; overflow: hidden; }
+.modal-plan:hover { border-color: var(--purple); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(67,56,255,0.1); }
+.modal-plan.featured { border: 2px solid var(--purple); background: linear-gradient(135deg, var(--purple-light) 0%, #f0eeff 100%); }
+.modal-plan-badge { display: inline-block; font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 6px; background: var(--purple); color: white; margin-bottom: 10px; }
+.modal-plan-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.01em; }
+.modal-plan-price { font-size: 28px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--purple); letter-spacing: -0.02em; line-height: 1; margin-bottom: 10px; }
+.modal-plan-price span { font-size: 14px; font-weight: 400; color: var(--muted); }
+.modal-plan-features { list-style: none; padding: 0; margin: 0; }
+.modal-plan-features li { font-size: 12px; color: var(--muted); padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+.modal-plan-features li::before { content: '✓'; color: var(--teal); font-weight: 700; font-size: 11px; }
+.modal-plan.featured .modal-plan-features li { color: var(--purple-dark); }
+.modal-plan.featured .modal-plan-price span { color: var(--purple-dark); }
 
 /* HISTORY */
 .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
@@ -253,7 +259,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       Continue with Google
     </button>
 
-    <div class="auth-note">🎓 Signing up with a .edu email? You'll automatically qualify for the student discount at checkout.</div>
+    <div class="auth-note">✍️ Sign up free and create your Linguistic DNA Profile — try your first rewrite on us.</div>
   </div>
 </div>
 
@@ -363,24 +369,34 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       <!-- UPGRADE MODAL -->
       <div class="modal-wrap" id="upgrade-modal">
         <div class="modal">
-          <div style="font-size:40px;margin-bottom:12px">✋</div>
-          <h2>You've used your 3 free rewrites</h2>
-          <p>Upgrade to Pro for unlimited rewrites, saved voice profiles, and priority support.</p>
+          <div class="modal-eyebrow">Unlock Your Voice</div>
+          <h2>Keep your writing human</h2>
+          <p>You've used your free rewrite. Upgrade to keep going — more rewrites, longer text, the same voice matching that makes AI sound like <em>you</em>.</p>
           <div class="modal-plans">
-            <div class="modal-plan" onclick="checkout('monthly')">
-              <div class="modal-plan-name">Pro Monthly</div>
-              <div class="modal-plan-price">$9<span style="font-size:14px;font-weight:400;color:var(--muted)">/mo</span></div>
-              <div class="modal-plan-sub">Cancel anytime</div>
+            <div class="modal-plan" onclick="checkout('plus')">
+              <div class="modal-plan-badge">Plus</div>
+              <div class="modal-plan-name">Plus</div>
+              <div class="modal-plan-price">$4<span>.99/mo</span></div>
+              <ul class="modal-plan-features">
+                <li>30 rewrites per month</li>
+                <li>Up to 1,000 words each</li>
+                <li>Full Linguistic DNA Profile</li>
+                <li>Email support</li>
+              </ul>
             </div>
-            <div class="modal-plan featured" onclick="checkout('annual')">
-              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);margin-bottom:4px">Best deal</div>
-              <div class="modal-plan-name">Pro Annual</div>
-              <div class="modal-plan-price">$39<span style="font-size:14px;font-weight:400;color:var(--purple-dark)">.99/yr</span></div>
-              <div class="modal-plan-sub">Was $108 · Save $68</div>
+            <div class="modal-plan featured" onclick="checkout('pro')">
+              <div class="modal-plan-badge" style="background:white;color:var(--purple)">⭐ Most Popular</div>
+              <div class="modal-plan-name">Pro</div>
+              <div class="modal-plan-price">$7<span>.99/mo</span></div>
+              <ul class="modal-plan-features">
+                <li>60 rewrites per month</li>
+                <li>Up to 2,000 words each</li>
+                <li>Full Linguistic DNA Profile</li>
+                <li>Priority support</li>
+              </ul>
             </div>
           </div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">🎓 .edu email? Student pricing applies automatically at checkout.</div>
-          <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeUpgrade()">Maybe later</button>
+          <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:4px" onclick="closeUpgrade()">Not right now</button>
         </div>
       </div>
 
@@ -624,18 +640,19 @@ function updatePlanBadge(plan) {
   var upgradeBtn = document.getElementById('upgrade-btn');
   badge.className = 'plan-badge';
   if (plan === 'pro') { badge.textContent = 'Pro'; badge.classList.add('badge-pro'); upgradeBtn.style.display = 'none'; }
-  else { badge.textContent = 'Free'; badge.classList.add('badge-free'); upgradeBtn.style.display = 'inline-flex'; }
+  else if (plan === 'plus') { badge.textContent = 'Plus'; badge.classList.add('badge-pro'); upgradeBtn.style.display = 'inline-flex'; upgradeBtn.textContent = 'Upgrade to Pro →'; }
+  else { badge.textContent = 'Free'; badge.classList.add('badge-free'); upgradeBtn.style.display = 'inline-flex'; upgradeBtn.textContent = 'Upgrade →'; }
 }
 
 function updateUsageBar() {
   var bar = document.getElementById('usage-bar');
   bar.style.display = 'flex';
-  var limit = userPlan === 'pro' ? 50 : 3;
+  var limit = userPlan === 'pro' ? 60 : userPlan === 'plus' ? 30 : 1;
   var pct = Math.min(100, Math.round((rewriteCount / limit) * 100));
   var fill = document.getElementById('usage-fill');
   fill.style.width = pct + '%';
   fill.className = 'usage-fill' + (pct >= 100 ? ' full' : pct >= 67 ? ' warn' : '');
-  var lim = userPlan === 'pro' ? 50 : 3; document.getElementById('usage-count').textContent = rewriteCount + ' / ' + lim;
+  document.getElementById('usage-count').textContent = rewriteCount + ' / ' + limit;
 }
 
 // ─── VOICE PROFILES ────────────────────────────────────────────
@@ -815,9 +832,13 @@ function updateWC() {
 }
 
 async function rewriteText() {
-  if (userPlan === 'free' && rewriteCount >= 3) { showUpgrade(); return; }
+  var limits = { free: { rewrites: 1, words: 500 }, plus: { rewrites: 30, words: 1000 }, pro: { rewrites: 60, words: 2000 } };
+  var plan = limits[userPlan] || limits.free;
+  if (rewriteCount >= plan.rewrites) { showUpgrade(); return; }
   var input = document.getElementById('ai-input').value.trim();
   if (!input) { showToast('Paste some AI text first'); return; }
+  var wordCount = input.split(/\s+/).filter(function(w){ return w.length > 0; }).length;
+  if (wordCount > plan.words) { showToast('Your plan allows up to ' + plan.words + ' words per rewrite. Upgrade for more.', 'error'); return; }
 
   var outputBody = document.getElementById('output-body');
   var copyBtn = document.getElementById('copy-btn');
@@ -905,8 +926,8 @@ function closeUpgrade() { document.getElementById('upgrade-modal').classList.rem
 function checkout(plan) {
   // Paste your Stripe payment links here after setting up Stripe
   var links = {
-    monthly: 'https://buy.stripe.com/PASTE_MONTHLY_LINK_HERE',
-    annual:  'https://buy.stripe.com/PASTE_ANNUAL_LINK_HERE'
+    plus:  'https://buy.stripe.com/PASTE_PLUS_LINK_HERE',
+    pro:   'https://buy.stripe.com/PASTE_PRO_LINK_HERE'
   };
   window.open(links[plan], '_blank');
 }
