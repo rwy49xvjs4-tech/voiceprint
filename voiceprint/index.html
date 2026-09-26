@@ -461,7 +461,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
     <div class="panel" id="panel4">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700">Recent rewrites</div>
-        <button class="btn btn-secondary" id="refresh-btn" onclick="refreshHistory()" style="font-size:12px">↺ Refresh</button>
+        <button class="btn btn-secondary" id="refresh-btn" onclick="refreshHistory()" style="font-size:12px"><span id="refresh-icon" style="display:inline-block">↺</span> Refresh</button>
       </div>
       <div id="history-list">
         <div style="font-size:14px;color:var(--muted);text-align:center;padding:48px">No rewrites yet — go rewrite something!</div>
@@ -722,6 +722,7 @@ function submitNewProfile() {
   activeProfileId = np.id;
   applyActiveProfile();
   renderProfileChips();
+  goStep(1);
 }
 
 async function deleteProfile(id) {
@@ -926,8 +927,8 @@ function copyOutput() {
 
 // ─── HISTORY ───────────────────────────────────────────────────
 async function refreshHistory() {
-  var btn = document.getElementById('refresh-btn');
-  if (btn) { btn.style.transform = 'rotate(360deg)'; btn.style.transition = 'transform 0.5s ease'; setTimeout(function(){ btn.style.transform = ''; btn.style.transition = ''; }, 500); }
+  var icon = document.getElementById('refresh-icon');
+  if (icon) { icon.style.transition = 'transform 0.5s ease'; icon.style.transform = 'rotate(360deg)'; setTimeout(function(){ icon.style.transition = ''; icon.style.transform = ''; }, 500); }
   await loadHistory();
 }
 
