@@ -400,6 +400,19 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         </div>
       </div>
 
+      <!-- NEW PROFILE MODAL -->
+      <div class="modal-wrap" id="new-profile-modal" onclick="if(event.target===this)closeNewProfileModal()">
+        <div class="modal" style="max-width:400px">
+          <h2 style="font-size:20px;margin-bottom:6px">Name your profile</h2>
+          <p style="margin-bottom:20px">Give it a name so you can switch between voices easily.</p>
+          <input id="new-profile-input" type="text" class="input" placeholder='e.g. "Work emails" or "Academic"' style="margin-bottom:16px" onkeydown="if(event.key==='Enter')submitNewProfile()">
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="closeNewProfileModal()">Cancel</button>
+            <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="submitNewProfile()">Create</button>
+          </div>
+        </div>
+      </div>
+
       <div class="controls-bar">
         <span class="ctrl-label">Voice strength</span>
         <input type="range" min="20" max="100" value="75" id="strength-slider">
@@ -448,7 +461,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
     <div class="panel" id="panel4">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700">Recent rewrites</div>
-        <button class="btn btn-secondary" onclick="loadHistory()" style="font-size:12px">↺ Refresh</button>
+        <button class="btn btn-secondary" id="refresh-btn" onclick="refreshHistory()" style="font-size:12px">↺ Refresh</button>
       </div>
       <div id="history-list">
         <div style="font-size:14px;color:var(--muted);text-align:center;padding:48px">No rewrites yet — go rewrite something!</div>
@@ -693,9 +706,18 @@ function switchProfile(id) {
 }
 
 function newProfile() {
-  var name = prompt('Name your profile (e.g. "Work emails", "Academic"):');
+  document.getElementById('new-profile-input').value = '';
+  document.getElementById('new-profile-modal').classList.add('show');
+  setTimeout(function(){ document.getElementById('new-profile-input').focus(); }, 100);
+}
+function closeNewProfileModal() {
+  document.getElementById('new-profile-modal').classList.remove('show');
+}
+function submitNewProfile() {
+  var name = document.getElementById('new-profile-input').value.trim();
   if (!name) return;
-  var np = { id: 'local-' + Date.now(), name: name.trim(), traits: null, samples: [] };
+  closeNewProfileModal();
+  var np = { id: 'local-' + Date.now(), name: name, traits: null, samples: [] };
   voiceProfiles.push(np);
   activeProfileId = np.id;
   applyActiveProfile();
@@ -903,6 +925,12 @@ function copyOutput() {
 }
 
 // ─── HISTORY ───────────────────────────────────────────────────
+async function refreshHistory() {
+  var btn = document.getElementById('refresh-btn');
+  if (btn) { btn.style.transform = 'rotate(360deg)'; btn.style.transition = 'transform 0.5s ease'; setTimeout(function(){ btn.style.transform = ''; btn.style.transition = ''; }, 500); }
+  await loadHistory();
+}
+
 async function loadHistory() {
   if (!currentUser) return;
   var { data } = await sb.from('rewrites').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(20);
