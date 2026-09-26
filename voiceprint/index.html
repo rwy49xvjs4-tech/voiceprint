@@ -177,9 +177,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 .modal-plan:hover { border-color: var(--purple); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(67,56,255,0.1); }
 .modal-plan.featured { border: 2px solid var(--purple); background: linear-gradient(135deg, var(--purple-light) 0%, #f0eeff 100%); }
 .modal-plan-badge { display: inline-block; font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 6px; background: var(--purple); color: white; margin-bottom: 10px; }
-.modal-plan-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.01em; }
-.modal-plan-price { font-size: 28px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--purple); letter-spacing: -0.02em; line-height: 1; margin-bottom: 10px; }
-.modal-plan-price span { font-size: 14px; font-weight: 400; color: var(--muted); }
+.modal-plan-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.01em; color: var(--ink); }
+.modal-plan-price { font-size: 32px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--ink); letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px; }
+.modal-plan-price-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; font-weight: 400; }
 .modal-plan-features { list-style: none; padding: 0; margin: 0; }
 .modal-plan-features li { font-size: 12px; color: var(--muted); padding: 3px 0; display: flex; align-items: center; gap: 6px; }
 .modal-plan-features li::before { content: '✓'; color: var(--teal); font-weight: 700; font-size: 11px; }
@@ -339,7 +339,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px">
-        <button class="btn btn-secondary" onclick="saveProfile()">💾 Save profile</button>
+        <button class="btn btn-secondary" onclick="saveProfile()">Save profile</button>
         <button class="btn btn-primary" id="build-btn" onclick="buildAndGoToProfile()" disabled>Build voice profile →</button>
       </div>
     </div>
@@ -358,7 +358,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         <div id="sig-phrases" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button class="btn btn-secondary" onclick="saveProfile()">💾 Save profile</button>
+        <button class="btn btn-secondary" onclick="saveProfile()">Save profile</button>
         <button class="btn btn-primary" onclick="goStep(3)">Start rewriting →</button>
       </div>
     </div>
@@ -375,8 +375,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
           <div class="modal-plans">
             <div class="modal-plan" onclick="checkout('plus')">
               <div class="modal-plan-badge">Plus</div>
-              <div class="modal-plan-name">Plus</div>
-              <div class="modal-plan-price">$4<span>.99/mo</span></div>
+              <div class="modal-plan-price">$4.99</div>
+              <div class="modal-plan-price-sub">per month</div>
               <ul class="modal-plan-features">
                 <li>30 rewrites per month</li>
                 <li>Up to 1,000 words each</li>
@@ -385,9 +385,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
               </ul>
             </div>
             <div class="modal-plan featured" onclick="checkout('pro')">
-              <div class="modal-plan-badge" style="background:white;color:var(--purple)">⭐ Most Popular</div>
-              <div class="modal-plan-name">Pro</div>
-              <div class="modal-plan-price">$7<span>.99/mo</span></div>
+              <div class="modal-plan-badge" style="background:var(--purple-dark);color:white">Most Popular</div>
+              <div class="modal-plan-price">$7.99</div>
+              <div class="modal-plan-price-sub">per month</div>
               <ul class="modal-plan-features">
                 <li>60 rewrites per month</li>
                 <li>Up to 2,000 words each</li>
@@ -519,7 +519,7 @@ async function bootApp(user) {
       var { data: created } = await sb.from('users').insert({
         id: user.id, email: email, signup_provider: provider,
         subscription_status: 'free', words_allowed_limit: 2000,
-        words_used_this_cycle: 0, onboarding_done: obDone
+        words_used_this_cycle: 0, rewrite_count: 0, onboarding_done: obDone
       }).select().single();
       userRow = created;
     } else {
@@ -531,11 +531,11 @@ async function bootApp(user) {
     }
   } catch(e) {
     console.warn('DB error:', e.message);
-    userRow = { subscription_status: 'free', words_allowed_limit: 2000, words_used_this_cycle: 0, onboarding_done: obDone };
+    userRow = { subscription_status: 'free', words_allowed_limit: 2000, words_used_this_cycle: 0, rewrite_count: 0, onboarding_done: obDone };
   }
 
   userPlan = (userRow && userRow.subscription_status) || 'free';
-  rewriteCount = (userRow && userRow.words_used_this_cycle) || 0;
+  rewriteCount = (userRow && userRow.rewrite_count) || 0;
   updatePlanBadge(userPlan);
   updateUsageBar();
   await loadVoiceProfiles();
@@ -886,7 +886,7 @@ async function rewriteText() {
     rewriteCount++;
     updateUsageBar();
     if (currentUser) {
-      try { await sb.from('users').update({ words_used_this_cycle: rewriteCount }).eq('id', currentUser.id); } catch(e) {}
+      try { await sb.from('users').update({ rewrite_count: rewriteCount }).eq('id', currentUser.id); } catch(e) {}
       try { await sb.from('rewrites').insert({ user_id: currentUser.id, input_text: input.substring(0,500), output_text: result.substring(0,500) }); } catch(e) {}
     }
   } catch(e) {
