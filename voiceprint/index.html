@@ -280,7 +280,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
     <div class="nav-right">
       <div class="nav-avatar" id="nav-avatar">?</div>
       <span class="plan-badge badge-free" id="plan-badge">Free</span>
-      <button class="btn btn-primary" id="upgrade-btn" onclick="showUpgrade()">Upgrade →</button>
+      <button class="btn btn-primary" id="upgrade-btn" onclick="showUpgrade()" style="display:inline-flex">Upgrade →</button>
       <button class="btn btn-secondary" onclick="handleSignOut()">Sign out</button>
     </div>
   </nav>
@@ -482,6 +482,7 @@ var sb = window.supabase.createClient(
 
 // ─── STATE ─────────────────────────────────────────────────────
 var currentUser = null;
+var currentSession = null;
 var userPlan = 'free';
 var rewriteCount = 0;
 var voiceProfiles = [];
@@ -495,6 +496,7 @@ var authMode = 'signin';
 window.addEventListener('load', async function() {
   var { data: { session } } = await sb.auth.getSession();
   if (session && session.user) {
+    currentSession = session;
     await bootApp(session.user);
   } else {
     showScreen('auth');
@@ -502,6 +504,7 @@ window.addEventListener('load', async function() {
 
   sb.auth.onAuthStateChange(async function(event, session) {
     if (event === 'SIGNED_IN' && session) {
+      currentSession = session;
       await bootApp(session.user);
     } else if (event === 'SIGNED_OUT') {
       showScreen('auth');
@@ -889,15 +892,38 @@ async function rewriteText() {
 
   var prompt = profileDesc + '\n\n' + sampleCtx + '\n\nRewrite the following AI-generated text to sound authentically like this person. ' + strengthNote + ' ' + toneNote + ' Keep the same meaning but transform the style. Output only the rewritten text, no preamble.\n\nText:\n' + input;
 
+  // Get fresh token for secure server-side verification
+  var token = currentSession && currentSession.access_token;
+  if (!token) {
+    var { data: { session: freshSession } } = await sb.auth.getSession();
+    if (freshSession) { currentSession = freshSession; token = freshSession.access_token; }
+  }
+
   try {
     var res = await fetch('/api/rewrite', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: prompt })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        text: input,
+        traits: voiceProfile,
+        strength: parseFloat(strength)
+      })
     });
     var data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Server error');
-    var result = data.result || 'Could not rewrite — try again.';
+    if (!res.ok) {
+      if (data.error === 'limit_reached') {
+        showToast('Monthly limit reached — upgrade to keep going', 'error');
+        document.getElementById('upgrade-modal').style.display = 'flex';
+      } else {
+        throw new Error(data.error || 'Server error');
+      }
+      rewriteBtn.disabled = false;
+      return;
+    }
+    var result = data.output || 'Could not rewrite — try again.';
     lastOutput = result;
     outputBody.className = 'output-body ready';
     outputBody.textContent = result;
@@ -906,10 +932,12 @@ async function rewriteText() {
     matchBadge.textContent = (Math.floor(Math.random()*15)+78) + '% voice match';
     matchBadge.style.display = 'inline-flex';
 
-    rewriteCount++;
+    // Server already incremented count — sync from server response
+    if (data.newCount !== undefined) { rewriteCount = data.newCount; }
+    else { rewriteCount++; }
     updateUsageBar();
+    // Log to rewrites table (non-critical)
     if (currentUser) {
-      try { await sb.from('users').update({ rewrite_count: rewriteCount }).eq('id', currentUser.id); } catch(e) {}
       try { await sb.from('rewrites').insert({ user_id: currentUser.id, input_text: input.substring(0,500), output_text: result.substring(0,500) }); } catch(e) {}
     }
   } catch(e) {
