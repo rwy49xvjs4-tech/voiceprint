@@ -367,52 +367,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
     <div class="panel" id="panel3">
 
       <!-- UPGRADE MODAL -->
-      <div class="modal-wrap" id="upgrade-modal">
-        <div class="modal">
-          <div class="modal-eyebrow">Unlock Your Voice</div>
-          <h2>Keep your writing human</h2>
-          <p>You've used your free rewrite. Upgrade to keep going — more rewrites, longer text, the same voice matching that makes AI sound like <em>you</em>.</p>
-          <div class="modal-plans">
-            <div class="modal-plan" onclick="checkout('plus')">
-              <div class="modal-plan-badge">Plus</div>
-              <div class="modal-plan-price">$4.99</div>
-              <div class="modal-plan-price-sub">per month</div>
-              <ul class="modal-plan-features">
-                <li>30 rewrites per month</li>
-                <li>Up to 1,000 words each</li>
-                <li>Full Linguistic DNA Profile</li>
-                <li>Email support</li>
-              </ul>
-            </div>
-            <div class="modal-plan featured" onclick="checkout('pro')">
-              <div class="modal-plan-badge" style="background:var(--purple-dark);color:white">Most Popular</div>
-              <div class="modal-plan-price">$7.99</div>
-              <div class="modal-plan-price-sub">per month</div>
-              <ul class="modal-plan-features">
-                <li>60 rewrites per month</li>
-                <li>Up to 2,000 words each</li>
-                <li>Full Linguistic DNA Profile</li>
-                <li>Priority support</li>
-              </ul>
-            </div>
-          </div>
-          <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:4px" onclick="closeUpgrade()">Not right now</button>
-        </div>
-      </div>
-
-      <!-- NEW PROFILE MODAL -->
-      <div class="modal-wrap" id="new-profile-modal" onclick="if(event.target===this)closeNewProfileModal()">
-        <div class="modal" style="max-width:400px">
-          <h2 style="font-size:20px;margin-bottom:6px">Name your profile</h2>
-          <p style="margin-bottom:20px">Give it a name so you can switch between voices easily.</p>
-          <input id="new-profile-input" type="text" class="input" placeholder='e.g. "Work emails" or "Academic"' style="margin-bottom:16px" onkeydown="if(event.key==='Enter')submitNewProfile()">
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="closeNewProfileModal()">Cancel</button>
-            <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="submitNewProfile()">Create</button>
-          </div>
-        </div>
-      </div>
-
       <div class="controls-bar">
         <span class="ctrl-label">Voice strength</span>
         <input type="range" min="20" max="100" value="75" id="strength-slider">
@@ -1022,5 +976,51 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && document.getElementById('auth-screen').style.display !== 'none') handleAuth();
 });
 </script>
+<!-- MODALS — outside #main-app so they work from any screen -->
+<div class="modal-wrap" id="upgrade-modal">
+  <div class="modal">
+    <div class="modal-eyebrow">Unlock Your Voice</div>
+    <h2>Keep your writing human</h2>
+    <p>You've used your free rewrite. Upgrade to keep going — more rewrites, longer text, the same voice matching that makes AI sound like <em>you</em>.</p>
+    <div class="modal-plans">
+      <div class="modal-plan" onclick="checkout('plus')">
+        <div class="modal-plan-badge">Plus</div>
+        <div class="modal-plan-price">$4.99</div>
+        <div class="modal-plan-price-sub">per month</div>
+        <ul class="modal-plan-features">
+          <li>30 rewrites per month</li>
+          <li>Up to 1,000 words each</li>
+          <li>Full Linguistic DNA Profile</li>
+          <li>Email support</li>
+        </ul>
+      </div>
+      <div class="modal-plan featured" onclick="checkout('pro')">
+        <div class="modal-plan-badge" style="background:var(--purple-dark);color:white">Most Popular</div>
+        <div class="modal-plan-price">$7.99</div>
+        <div class="modal-plan-price-sub">per month</div>
+        <ul class="modal-plan-features">
+          <li>60 rewrites per month</li>
+          <li>Up to 2,000 words each</li>
+          <li>Full Linguistic DNA Profile</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:4px" onclick="closeUpgrade()">Not right now</button>
+  </div>
+</div>
+
+<div class="modal-wrap" id="new-profile-modal" onclick="if(event.target===this)closeNewProfileModal()">
+  <div class="modal" style="max-width:400px">
+    <h2 style="font-size:20px;margin-bottom:6px">Name your profile</h2>
+    <p style="margin-bottom:20px">Give it a name so you can switch between voices easily.</p>
+    <input id="new-profile-input" type="text" class="input" placeholder='e.g. "Work emails" or "Academic"' style="margin-bottom:16px" onkeydown="if(event.key==='Enter')submitNewProfile()">
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="closeNewProfileModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="submitNewProfile()">Create</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
