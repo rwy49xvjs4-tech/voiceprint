@@ -340,7 +340,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px">
         <button class="btn btn-secondary" onclick="saveProfile()">Save profile</button>
-        <button class="btn btn-primary" id="build-btn" onclick="buildAndGoToProfile()" disabled>Build voice profile →</button>
+        <button class="btn btn-primary" id="build-btn" onclick="buildAndGoToProfile()">Build voice profile →</button>
       </div>
     </div>
 
@@ -785,7 +785,7 @@ function renderSamples() {
   list.innerHTML = samples.map(function(s, i) {
     return '<div class="sample-item"><span style="color:var(--muted);font-size:11px;margin-right:8px;text-transform:uppercase;font-family:\'Syne\',sans-serif;font-weight:700">' + s.type + '</span><span style="flex:1;color:var(--ink);font-size:12px">' + s.text.substring(0,60) + '...</span><button class="remove-btn" onclick="removeSample(' + i + ')">×</button></div>';
   }).join('');
-  btn.disabled = samples.length < 2;
+  btn.disabled = samples.length < 1;
 }
 
 // ─── VOICE ANALYSIS ────────────────────────────────────────────
