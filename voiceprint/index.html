@@ -779,6 +779,7 @@ function renderSamples() {
   var count = document.getElementById('sample-count');
   var list = document.getElementById('sample-list');
   var btn = document.getElementById('build-btn');
+  if (!count || !list || !btn) return;
   count.textContent = '(' + samples.length + ')';
   if (samples.length === 0) {
     list.innerHTML = '<div style="font-size:13px;color:var(--muted);font-style:italic;padding:6px 0">No samples yet. Add at least 2.</div>';
@@ -822,6 +823,7 @@ function buildAndGoToProfile() {
 
 function renderTraits() {
   if (!voiceProfile) return;
+  if (!document.getElementById('trait-list')) return;
   var traits = [
     { name: 'Formality', val: voiceProfile.formality, low: 'Very casual', mid: 'Semi-formal', high: 'Formal' },
     { name: 'Sentence length', val: voiceProfile.sentenceLength, low: 'Long sentences', mid: 'Medium', high: 'Short & punchy' },
@@ -916,7 +918,7 @@ async function rewriteText() {
     if (!res.ok) {
       if (data.error === 'limit_reached') {
         showToast('Monthly limit reached — upgrade to keep going', 'error');
-        document.getElementById('upgrade-modal').style.display = 'flex';
+        document.getElementById('upgrade-modal').classList.add('show');
       } else {
         throw new Error(data.error || 'Server error');
       }
