@@ -271,7 +271,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 <body>
 
 <!-- LANDING -->
-<div id="landing-screen">
+<div id="landing-screen" style="display:flex;flex-direction:column">
   <nav class="land-nav">
     <div class="land-logo"><span class="logo-dot"></span>voiceprint</div>
     <div class="land-nav-btns">
@@ -287,16 +287,16 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
       <button class="btn btn-secondary" onclick="showScreen('auth');switchAuthTab('signin')" style="font-size:15px;padding:14px 28px">Sign in</button>
     </div>
     <div class="land-features">
-      <div class="land-feat"><div class="land-feat-dot"></div>No credit card needed</div>
       <div class="land-feat"><div class="land-feat-dot"></div>3 free rewrites</div>
       <div class="land-feat"><div class="land-feat-dot"></div>Works with any AI output</div>
+      <div class="land-feat"><div class="land-feat-dot"></div>Takes 2 minutes to set up</div>
     </div>
     <div class="land-before-after">
-      <div class="ba-label">Before</div>
-      <div class="ba-text ba-before">"Artificial intelligence has fundamentally transformed the landscape of modern education, providing students with unprecedented access to informational resources."</div>
-      <div class="ba-arrow">↓ rewritten as you</div>
-      <div class="ba-label">After</div>
-      <div class="ba-text ba-after">"honestly AI has completely changed how students learn — like the amount of stuff you can access now vs even 5 years ago is wild."</div>
+      <div class="ba-label">AI-generated text</div>
+      <div class="ba-text ba-before" id="land-before-text"></div>
+      <div class="ba-arrow" id="land-arrow" style="opacity:0;transition:opacity 0.4s">↓ rewriting as you...</div>
+      <div class="ba-label" id="land-after-label" style="opacity:0;transition:opacity 0.4s">Rewritten as you</div>
+      <div class="ba-text ba-after" id="land-after-text" style="opacity:0;transition:opacity 0.4s;min-height:52px"></div>
     </div>
   </div>
 </div>
@@ -639,10 +639,11 @@ window.addEventListener('load', function() {
   var cachedUser = null;
   try { cachedUser = JSON.parse(localStorage.getItem('vp_user')); } catch(e) {}
   if (cachedUser && cachedUser.id) {
+    // Show loading while we verify the session
+    showScreen('loading');
     bootApp(cachedUser);
-  } else {
-    showScreen('landing');
   }
+  // If no cached user, landing page is already visible (default display:flex)
   sb.auth.getSession().then(function(result) {
     var session = result.data && result.data.session;
     if (session && session.user) {
@@ -650,9 +651,10 @@ window.addEventListener('load', function() {
       if (!cachedUser) bootApp(session.user);
     } else {
       localStorage.removeItem('vp_user');
+      // Only redirect to landing if we were showing loading/app (returning user whose session expired)
       if (cachedUser) showScreen('landing');
     }
-  }).catch(function() {});
+  }).catch(function() { if (!cachedUser) showScreen('landing'); });
   sb.auth.onAuthStateChange(function(event, session) {
     if (event === 'SIGNED_IN' && session) {
       localStorage.setItem('vp_user', JSON.stringify({ id: session.user.id, email: session.user.email }));
@@ -1193,13 +1195,76 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && document.getElementById('auth-screen').style.display !== 'none') handleAuth();
 });
 
+// ── LANDING TYPING ANIMATION ──────────────────────────────────
+var landingExamples = [
+  {
+    before: "Artificial intelligence has fundamentally transformed the landscape of modern education, providing students with unprecedented access to informational resources.",
+    after: "honestly AI has completely changed how students learn — like the amount of stuff you can access now vs even 5 years ago is wild."
+  },
+  {
+    before: "In conclusion, it is imperative that organizations leverage data-driven methodologies to optimize operational efficiencies and achieve sustainable competitive advantages.",
+    after: "basically if you're not using data to make decisions you're already behind. it's not optional anymore."
+  },
+  {
+    before: "The utilization of social media platforms has demonstrated significant correlations with heightened levels of anxiety and depression among adolescent populations.",
+    after: "social media is genuinely messing with teens' mental health and the research keeps confirming it. not really a debate at this point."
+  }
+];
+var landIdx = 0;
+var landTyping = false;
+
+function typeText(el, text, speed, cb) {
+  el.textContent = '';
+  var i = 0;
+  var t = setInterval(function() {
+    el.textContent += text[i];
+    i++;
+    if (i >= text.length) { clearInterval(t); if (cb) cb(); }
+  }, speed);
+}
+
+function runLandingAnimation() {
+  if (document.getElementById('landing-screen').style.display === 'none') return;
+  var ex = landingExamples[landIdx % landingExamples.length];
+  landIdx++;
+  var beforeEl = document.getElementById('land-before-text');
+  var afterEl = document.getElementById('land-after-text');
+  var arrowEl = document.getElementById('land-arrow');
+  var afterLabel = document.getElementById('land-after-label');
+
+  // Reset
+  afterEl.style.opacity = '0';
+  arrowEl.style.opacity = '0';
+  afterLabel.style.opacity = '0';
+  afterEl.textContent = '';
+
+  // Type the before text
+  typeText(beforeEl, ex.before, 22, function() {
+    // Pause, then show arrow
+    setTimeout(function() {
+      arrowEl.style.opacity = '1';
+      afterLabel.style.opacity = '1';
+      setTimeout(function() {
+        afterEl.style.opacity = '1';
+        typeText(afterEl, ex.after, 28, function() {
+          // Hold, then loop
+          setTimeout(runLandingAnimation, 3200);
+        });
+      }, 500);
+    }, 600);
+  });
+}
+
+// Start animation when page loads
+setTimeout(runLandingAnimation, 400);
+
 document.addEventListener('visibilitychange', function() {
   if (document.visibilityState === 'visible') {
     var ls = document.getElementById('loading-screen');
     if (ls && ls.style.display !== 'none') {
       var cu = null;
       try { cu = JSON.parse(localStorage.getItem('vp_user')); } catch(e) {}
-      if (cu && cu.id) showScreen('app'); else showScreen('auth');
+      if (cu && cu.id) showScreen('app'); else showScreen('landing');
     }
   }
 });
