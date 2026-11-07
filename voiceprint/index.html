@@ -579,48 +579,81 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 
     <!-- PANEL 5: AI DETECTOR -->
     <div class="panel" id="panel5">
-      <div class="card" style="max-width:700px;margin:0 auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px">🔍 AI Detector</div>
-          <span style="font-size:12px;color:var(--muted)">100% free — no limit</span>
+      <div style="max-width:780px;margin:0 auto">
+
+        <!-- Header -->
+        <div style="margin-bottom:20px">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.02em;margin-bottom:4px">AI Content Detector</div>
+          <div style="font-size:14px;color:var(--muted)">Paste any text below to check if it reads as AI-generated.</div>
         </div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Paste any text and see how likely it is to get flagged as AI-written.</div>
 
-        <textarea id="detect-input" rows="8" placeholder="Paste your essay, email, or any text here..." style="margin-bottom:12px"></textarea>
-
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-          <button class="btn btn-primary" onclick="runDetector()" id="detect-btn" style="font-size:14px;padding:11px 24px">Check for AI →</button>
-          <button class="btn btn-secondary" onclick="document.getElementById('detect-input').value='';resetDetector()" style="font-size:13px">Clear</button>
-          <span style="font-size:12px;color:var(--muted)" id="detect-wc">0 words</span>
+        <!-- Input card -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:16px">
+          <textarea id="detect-input" rows="9" placeholder="Paste your essay, email, or any AI-generated text here..." style="border:none;border-radius:0;background:white;padding:20px;font-size:14px;min-height:200px"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);background:var(--paper)">
+            <span style="font-size:12px;color:var(--muted);font-family:'Syne',sans-serif" id="detect-wc">0 words</span>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" onclick="document.getElementById('detect-input').value='';resetDetector()" style="font-size:12px;padding:7px 14px">Clear</button>
+              <button class="btn btn-primary" onclick="runDetector()" id="detect-btn" style="font-size:13px;padding:9px 22px">Check text →</button>
+            </div>
+          </div>
         </div>
 
         <!-- RESULT -->
         <div id="detect-result" style="display:none">
-          <!-- Big score -->
-          <div style="display:flex;align-items:center;gap:20px;background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;flex-wrap:wrap">
-            <div style="text-align:center;min-width:80px">
-              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:44px;line-height:1" id="detect-big-pct">0%</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.04em">AI probability</div>
-            </div>
-            <div style="flex:1;min-width:160px">
-              <div style="height:10px;background:var(--cream);border-radius:5px;overflow:hidden;margin-bottom:10px">
-                <div id="detect-big-bar" style="height:100%;border-radius:5px;transition:width 0.7s cubic-bezier(0.16,1,0.3,1);width:0%"></div>
+
+          <!-- Score row -->
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:12px;align-items:center">
+
+            <!-- Circular score -->
+            <div style="position:relative;width:110px;height:110px;flex-shrink:0">
+              <svg width="110" height="110" style="transform:rotate(-90deg)">
+                <circle cx="55" cy="55" r="46" fill="none" stroke="var(--cream)" stroke-width="8"/>
+                <circle cx="55" cy="55" r="46" fill="none" stroke-width="8" stroke-linecap="round"
+                  id="detect-ring"
+                  stroke-dasharray="289"
+                  stroke-dashoffset="289"
+                  style="transition:stroke-dashoffset 0.9s cubic-bezier(0.16,1,0.3,1),stroke 0.4s"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px;line-height:1" id="detect-big-pct">0%</div>
+                <div style="font-size:9px;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:2px">AI score</div>
               </div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px" id="detect-verdict">—</div>
-              <div style="font-size:13px;color:var(--muted);margin-top:4px" id="detect-summary">—</div>
             </div>
-          </div>
-          <!-- Breakdown -->
-          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px">What we found</div>
-          <div id="detect-breakdown" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
-          <!-- CTA -->
-          <div id="detect-cta" style="display:none;background:var(--purple-light);border:1px solid rgba(74,63,255,0.2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+
+            <!-- Verdict + bar -->
             <div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:2px">Rewrite this to pass detection</div>
-              <div style="font-size:12px;color:var(--muted)">Voiceprint will rewrite it to sound like you — and pass AI detectors.</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:6px" id="detect-verdict">—</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5" id="detect-summary">—</div>
+              <!-- Segmented bar -->
+              <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px">
+                <div style="flex:3;background:#22c55e;border-radius:4px;opacity:0.3" id="seg-human"></div>
+                <div style="flex:3;background:var(--amber);border-radius:4px;opacity:0.3" id="seg-mixed"></div>
+                <div style="flex:4;background:var(--red);border-radius:4px;opacity:0.3" id="seg-ai"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:5px">
+                <span style="font-size:10px;color:var(--muted);font-family:'Syne',sans-serif;font-weight:600">Human</span>
+                <span style="font-size:10px;color:var(--muted);font-family:'Syne',sans-serif;font-weight:600">Mixed</span>
+                <span style="font-size:10px;color:var(--muted);font-family:'Syne',sans-serif;font-weight:600">AI</span>
+              </div>
             </div>
-            <button class="btn btn-primary" onclick="sendToRewrite()" style="font-size:13px;white-space:nowrap">Rewrite as me →</button>
           </div>
+
+          <!-- Signals breakdown -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:12px">
+            <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px">Signals detected</div>
+            <div id="detect-breakdown"></div>
+          </div>
+
+          <!-- CTA banner -->
+          <div id="detect-cta" style="display:none;background:linear-gradient(135deg,var(--purple) 0%,var(--purple-dark) 100%);border-radius:16px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:white;margin-bottom:4px">Make it pass detection</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.75)">Rewrite it in your voice — sounds human, still says what you need.</div>
+            </div>
+            <button onclick="sendToRewrite()" style="background:white;color:var(--purple-dark);border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:11px 20px;cursor:pointer;white-space:nowrap">Rewrite as me →</button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1322,51 +1355,59 @@ function runDetector() {
   score = Math.max(2, Math.min(97, Math.round(score)));
 
   // Render result
-  var result = document.getElementById('detect-result');
-  result.style.display = 'block';
+  document.getElementById('detect-result').style.display = 'block';
 
   var bigPct = document.getElementById('detect-big-pct');
-  var bigBar = document.getElementById('detect-big-bar');
+  var ring = document.getElementById('detect-ring');
   var verdict = document.getElementById('detect-verdict');
   var summary = document.getElementById('detect-summary');
   var breakdown = document.getElementById('detect-breakdown');
   var cta = document.getElementById('detect-cta');
 
+  // Circular ring: circumference = 2π×46 ≈ 289
+  var dashOffset = Math.round(289 - (score / 100) * 289);
   bigPct.textContent = score + '%';
-  bigBar.style.width = score + '%';
+  ring.style.strokeDashoffset = dashOffset;
+
+  // Segmented bar highlight
+  ['seg-human','seg-mixed','seg-ai'].forEach(function(id){ document.getElementById(id).style.opacity='0.2'; });
 
   if (score < 30) {
-    bigPct.style.color = 'var(--teal)';
-    bigBar.style.background = 'var(--teal)';
-    verdict.textContent = '✓ Likely human';
-    verdict.style.color = 'var(--teal)';
-    summary.textContent = 'This text reads as human-written. Low chance of getting flagged.';
+    ring.style.stroke = '#22c55e';
+    bigPct.style.color = '#22c55e';
+    verdict.innerHTML = '<span style="color:#22c55e">✓ Likely Human</span>';
+    summary.textContent = 'This text reads as human-written. Low chance of getting flagged by AI detectors.';
+    document.getElementById('seg-human').style.opacity = '1';
     cta.style.display = 'none';
   } else if (score < 60) {
+    ring.style.stroke = 'var(--amber)';
     bigPct.style.color = 'var(--amber)';
-    bigBar.style.background = 'var(--amber)';
-    verdict.textContent = '⚠ Could be flagged';
-    verdict.style.color = 'var(--amber)';
-    summary.textContent = 'Some AI patterns detected. Might get flagged depending on the detector.';
+    verdict.innerHTML = '<span style="color:var(--amber)">⚠ Mixed — Could Be Flagged</span>';
+    summary.textContent = 'Some AI patterns found. May get flagged depending on which detector is used.';
+    document.getElementById('seg-mixed').style.opacity = '1';
     cta.style.display = 'flex';
   } else {
+    ring.style.stroke = 'var(--red)';
     bigPct.style.color = 'var(--red)';
-    bigBar.style.background = 'var(--red)';
-    verdict.textContent = '✗ Likely AI-written';
-    verdict.style.color = 'var(--red)';
-    summary.textContent = 'Strong AI signals. Will likely be flagged by most detectors.';
+    verdict.innerHTML = '<span style="color:var(--red)">✗ Likely AI-Written</span>';
+    summary.textContent = 'Strong AI signals detected. Will likely be flagged by most AI content detectors.';
+    document.getElementById('seg-ai').style.opacity = '1';
     cta.style.display = 'flex';
   }
 
-  var severityColor = { high: 'var(--red)', medium: 'var(--amber)', low: 'var(--teal)' };
   if (flags.length === 0) {
-    breakdown.innerHTML = '<div style="font-size:13px;color:var(--teal);padding:10px 0">✓ No significant AI patterns found</div>';
+    breakdown.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:12px 0;color:#22c55e;font-family:\'Syne\',sans-serif;font-weight:700;font-size:13px"><span style="font-size:18px">✓</span> No significant AI patterns found — text reads naturally</div>';
   } else {
     breakdown.innerHTML = flags.map(function(f) {
-      return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--paper);border-radius:10px;border:1px solid var(--border)">' +
-        '<span style="font-size:16px;line-height:1.4">' + (f.severity === 'high' ? '🔴' : '🟡') + '</span>' +
-        '<div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:13px;margin-bottom:2px">' + f.label + '</div>' +
-        '<div style="font-size:12px;color:var(--muted)">' + f.detail + '</div></div></div>';
+      var color = f.severity === 'high' ? 'var(--red)' : 'var(--amber)';
+      var bg = f.severity === 'high' ? 'rgba(220,38,38,0.06)' : 'rgba(232,136,42,0.07)';
+      var dot = f.severity === 'high' ? '#dc2626' : '#e8882a';
+      return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:' + bg + ';border-radius:12px;margin-bottom:8px">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:' + dot + ';margin-top:5px;flex-shrink:0"></div>' +
+        '<div style="flex:1"><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:13px;margin-bottom:3px;color:var(--ink)">' + f.label + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);line-height:1.5">' + f.detail + '</div></div>' +
+        '<span style="font-size:10px;font-family:\'Syne\',sans-serif;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:' + bg + ';color:' + color + ';flex-shrink:0">' + f.severity + '</span>' +
+        '</div>';
     }).join('');
   }
 }
