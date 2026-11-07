@@ -214,6 +214,25 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
 .modal-plan-price { font-size: 20px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--purple); }
 .modal-plan-sub { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
 
+/* ai detector */
+.ai-detect-bar { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.ai-detect-label { font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); white-space: nowrap; }
+.ai-detect-score { display: flex; align-items: center; gap: 8px; }
+.ai-detect-pct { font-size: 20px; font-weight: 800; font-family: 'Syne', sans-serif; line-height: 1; }
+.ai-detect-pct.score-low { color: var(--teal); }
+.ai-detect-pct.score-mid { color: var(--amber); }
+.ai-detect-pct.score-high { color: var(--red); }
+.ai-detect-pill { font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.ai-detect-pill.pill-low { background: var(--teal-light); color: var(--teal); }
+.ai-detect-pill.pill-mid { background: rgba(232,136,42,0.12); color: var(--amber); }
+.ai-detect-pill.pill-high { background: rgba(220,38,38,0.1); color: var(--red); }
+.ai-detect-track { flex: 1; min-width: 80px; height: 5px; background: var(--cream); border-radius: 3px; overflow: hidden; }
+.ai-detect-fill { height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1), background 0.4s; }
+.ai-detect-arrow { font-size: 15px; color: var(--muted); flex-shrink: 0; }
+.ai-detect-after { opacity: 0; transition: opacity 0.4s; display: flex; align-items: center; gap: 8px; }
+.ai-detect-after.show { opacity: 1; }
+.ai-detect-hint { font-size: 11px; color: var(--muted); font-family: 'Syne', sans-serif; }
+
 /* history */
 .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
 .history-time { font-size: 11px; color: var(--muted); font-family: 'Syne', sans-serif; margin-bottom: 10px; }
@@ -537,14 +556,33 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px;
         </select>
       </div>
 
+      <!-- AI DETECTION BAR -->
+      <div class="ai-detect-bar" id="detect-bar" style="display:none">
+        <span class="ai-detect-label">AI Detection Risk</span>
+        <div class="ai-detect-score">
+          <span class="ai-detect-pct" id="detect-before-pct">—</span>
+          <span class="ai-detect-pill" id="detect-before-pill">Paste text</span>
+        </div>
+        <div class="ai-detect-track"><div class="ai-detect-fill" id="detect-before-fill" style="width:0%;background:var(--muted)"></div></div>
+        <span class="ai-detect-arrow" id="detect-arrow" style="opacity:0">→</span>
+        <div class="ai-detect-after" id="detect-after">
+          <div class="ai-detect-score">
+            <span class="ai-detect-pct" id="detect-after-pct">—</span>
+            <span class="ai-detect-pill" id="detect-after-pill">After rewrite</span>
+          </div>
+          <div class="ai-detect-track" style="min-width:60px"><div class="ai-detect-fill" id="detect-after-fill" style="width:0%;background:var(--teal)"></div></div>
+        </div>
+        <span class="ai-detect-hint" id="detect-hint">Paste text to scan</span>
+      </div>
+
       <div class="rewrite-cols">
         <div class="rewrite-col">
           <div class="col-header">
             <span class="col-label">AI-generated text</span>
-            <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('ai-input').value='';updateWC()">Clear</button>
+            <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px" onclick="document.getElementById('ai-input').value='';updateWC();resetDetect()">Clear</button>
           </div>
           <div class="col-body">
-            <textarea id="ai-input" rows="10" placeholder="Paste ChatGPT, Claude, Gemini output here..." onkeyup="updateWC()"></textarea>
+            <textarea id="ai-input" rows="10" placeholder="Paste ChatGPT, Claude, Gemini output here..." onkeyup="updateWC();scheduleDetect()" onpaste="setTimeout(function(){updateWC();runDetect();},50)"></textarea>
           </div>
           <div class="col-footer">
             <button class="btn btn-primary" onclick="rewriteText()" id="rewrite-btn">Rewrite as me →</button>
@@ -1113,6 +1151,7 @@ async function rewriteText() {
     lastOutput = result;
     outputBody.className = 'output-body ready';
     outputBody.textContent = result;
+    updateDetectAfter(result);
     copyBtn.disabled = false;
     retryBtn.style.display = 'inline-flex';
     matchBadge.textContent = (Math.floor(Math.random()*15)+78) + '% voice match';
@@ -1194,6 +1233,138 @@ function showToast(msg, type) {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && document.getElementById('auth-screen').style.display !== 'none') handleAuth();
 });
+
+// ── AI DETECTOR ───────────────────────────────────────────────
+var detectTimer = null;
+
+function scheduleDetect() {
+  if (detectTimer) clearTimeout(detectTimer);
+  detectTimer = setTimeout(function() { runDetect(); }, 500);
+}
+
+function resetDetect() {
+  document.getElementById('detect-bar').style.display = 'none';
+  document.getElementById('detect-after').classList.remove('show');
+  document.getElementById('detect-arrow').style.opacity = '0';
+}
+
+function scoreAI(text) {
+  if (!text || text.trim().length < 20) return null;
+  var t = text.trim();
+  var words = t.split(/\s+/);
+  var sents = t.split(/[.!?]+/).filter(function(s){ return s.trim().length > 3; });
+  var score = 0;
+  var reasons = [];
+
+  // 1. Formal transition phrases (huge AI tell)
+  var formalTransitions = (t.match(/\b(furthermore|moreover|additionally|consequently|nevertheless|nonetheless|in conclusion|in summary|it is worth noting|it is important to|it should be noted|this demonstrates|this highlights|this underscores|this illustrates|as a result|therefore|thus|hence)\b/gi)||[]).length;
+  if (formalTransitions > 0) { score += Math.min(35, formalTransitions * 10); reasons.push('formal transitions'); }
+
+  // 2. Hedging phrases AI loves
+  var hedging = (t.match(/\b(it is imperative|it is essential|it is crucial|it is vital|plays a (crucial|vital|key|pivotal|significant) role|a wide (range|variety|array) of|in today's (world|society|landscape|era)|the (importance|significance) of|leverage|utilize|utilize|implement|robust|comprehensive|holistic|synergy|paradigm|facilitate|empower|unlock (the power|your potential)|dive (in|into)|revolutionize|transform(ative|ation)?|game.changer|cutting.edge|state.of.the.art)\b/gi)||[]).length;
+  if (hedging > 0) { score += Math.min(30, hedging * 8); reasons.push('AI buzzwords'); }
+
+  // 3. Sentence length uniformity (AI writes very consistent lengths)
+  if (sents.length >= 3) {
+    var lens = sents.map(function(s){ return s.trim().split(/\s+/).length; });
+    var avg = lens.reduce(function(a,b){return a+b;},0) / lens.length;
+    var variance = lens.reduce(function(a,b){return a+Math.pow(b-avg,2);},0) / lens.length;
+    var stdDev = Math.sqrt(variance);
+    if (stdDev < 4 && avg > 10) { score += 20; reasons.push('uniform sentence length'); }
+    else if (stdDev < 7 && avg > 12) { score += 10; }
+  }
+
+  // 4. No contractions (AI often avoids casual contractions)
+  var contractions = (t.match(/\b(i'm|you're|it's|don't|can't|won't|isn't|that's|they're|i've|i'll|i'd|we're|we've|wouldn't|couldn't|shouldn't|haven't|hasn't|didn't|wasn't|weren't)\b/gi)||[]).length;
+  var contractionRate = contractions / Math.max(sents.length, 1);
+  if (contractionRate < 0.3 && words.length > 60) { score += 15; reasons.push('no contractions'); }
+
+  // 5. Passive voice tendency
+  var passive = (t.match(/\b(is|are|was|were|be|been|being)\s+(being\s+)?\w+ed\b/gi)||[]).length;
+  if (passive > 2) { score += Math.min(15, passive * 4); reasons.push('passive voice'); }
+
+  // 6. Personal voice signals (reduce score)
+  var slang = (t.match(/\b(lol|tbh|ngl|honestly|literally|basically|kinda|lowkey|ok|yeah|nah|like|idk|gonna|gotta|wanna|honestly|actually|wait|so like|i mean)\b/gi)||[]).length;
+  score -= Math.min(25, slang * 6);
+
+  // 7. First person casual usage (reduces AI score)
+  var firstPerson = (t.match(/\b(i |i'm |i've |i'll |i'd |my |myself )\b/gi)||[]).length;
+  if (firstPerson > 2) score -= Math.min(15, firstPerson * 2);
+
+  // 8. Filler openers AI uses
+  var aiOpeners = (t.match(/^(In (today's|the modern|recent|our increasingly)|Artificial intelligence|The (concept|notion|idea|importance|rise|advent|impact)|When it comes to|One of the|There (is|are|has been)|As (we|technology|society)|With the (rise|advent|growing|increasing))/i)||[]).length;
+  if (aiOpeners) { score += 15; reasons.push('AI-style opener'); }
+
+  score = Math.max(0, Math.min(99, Math.round(score)));
+  return { score: score, reasons: reasons };
+}
+
+function renderDetectScore(elPct, elPill, elFill, result, label) {
+  if (!result) return;
+  var s = result.score;
+  var colorClass, pillClass, fillColor, riskLabel;
+  if (s < 30) { colorClass = 'score-low'; pillClass = 'pill-low'; fillColor = 'var(--teal)'; riskLabel = 'Low risk'; }
+  else if (s < 65) { colorClass = 'score-mid'; pillClass = 'pill-mid'; fillColor = 'var(--amber)'; riskLabel = 'Medium risk'; }
+  else { colorClass = 'score-high'; pillClass = 'pill-high'; fillColor = 'var(--red)'; riskLabel = 'High risk'; }
+  elPct.textContent = s + '%';
+  elPct.className = 'ai-detect-pct ' + colorClass;
+  elPill.textContent = label || riskLabel;
+  elPill.className = 'ai-detect-pill ' + pillClass;
+  elFill.style.width = s + '%';
+  elFill.style.background = fillColor;
+}
+
+function runDetect() {
+  var text = document.getElementById('ai-input').value.trim();
+  var bar = document.getElementById('detect-bar');
+  if (!text || text.length < 30) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  var result = scoreAI(text);
+  if (!result) return;
+  renderDetectScore(
+    document.getElementById('detect-before-pct'),
+    document.getElementById('detect-before-pill'),
+    document.getElementById('detect-before-fill'),
+    result
+  );
+  var hints = {
+    'formal transitions': 'Uses formal transitions like "furthermore", "moreover"',
+    'AI buzzwords': 'Contains AI buzzwords like "leverage", "utilize", "robust"',
+    'uniform sentence length': 'Sentences are too similar in length',
+    'no contractions': 'No contractions — sounds too stiff',
+    'passive voice': 'Heavy passive voice',
+    'AI-style opener': 'Opens with a classic AI phrase'
+  };
+  var hintMsg = result.reasons.length > 0 ? '⚠ ' + (hints[result.reasons[0]] || result.reasons[0]) : (result.score < 30 ? '✓ Looks human already' : 'AI patterns detected');
+  document.getElementById('detect-hint').textContent = hintMsg;
+  // Reset after score
+  document.getElementById('detect-after').classList.remove('show');
+  document.getElementById('detect-arrow').style.opacity = '0';
+}
+
+function updateDetectAfter(outputText) {
+  var result = scoreAI(outputText);
+  if (!result) return;
+  renderDetectScore(
+    document.getElementById('detect-after-pct'),
+    document.getElementById('detect-after-pill'),
+    document.getElementById('detect-after-fill'),
+    result,
+    'After rewrite'
+  );
+  document.getElementById('detect-arrow').style.opacity = '1';
+  document.getElementById('detect-after').classList.add('show');
+  // Update hint
+  var before = scoreAI(document.getElementById('ai-input').value.trim());
+  if (before && result.score < before.score) {
+    var drop = before.score - result.score;
+    document.getElementById('detect-hint').textContent = '↓ Reduced AI risk by ' + drop + 'pts — looks more human!';
+  } else if (before && result.score <= 30) {
+    document.getElementById('detect-hint').textContent = '✓ Passes detection — sounds human';
+  } else {
+    document.getElementById('detect-hint').textContent = 'Try increasing Voice Strength for better results';
+  }
+}
 
 // ── LANDING TYPING ANIMATION ──────────────────────────────────
 var landingExamples = [
